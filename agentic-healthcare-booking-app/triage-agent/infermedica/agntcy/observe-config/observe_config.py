@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Dict, Optional
 
 def initialize_observability(service_name):
-    """Initialize observability with proper configuration for services"""
+    """Initialize observability with proper configuration for observe services"""
     try:
         from ioa_observe.sdk.logging.logging import LoggerWrapper
         from ioa_observe.sdk.metrics.metrics import MetricsWrapper
