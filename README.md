@@ -28,12 +28,12 @@ The [Agentic-healthcare-booking app repository](https://github.com/techm-2025/cu
 - A2A Communication: Agent-to-Agent messaging
 
 ## Implementation
-MAS Development - Core multi-agent system architecture
-A2A Communication - Agent-to-agent messaging
-MCP protocol - MCP tool calls
-AGNTCY OASF & Agent Directory - Agent record registry and discovery
-AGNTCY Identity - Authentication, agent cards, A2A support, Task-based Access Control (TBAC)
-AGNTCY Observability - Metrics, schema validation, runtime monitoring
+- MAS Development - Core multi-agent system architecture
+- A2A Communication - Agent-to-agent messaging
+- MCP protocol - MCP tool calls
+- AGNTCY OASF & Agent Directory - Agent record registry and discovery
+- AGNTCY Identity - Authentication, agent cards, A2A support, Task-based Access Control (TBAC)
+- AGNTCY Observability - Metrics, schema validation, runtime monitoring
 
 ## Installation
 **Clone the repository**
