@@ -19,7 +19,7 @@ The [Agentic-healthcare-booking app repository](https://github.com/techm-2025/cu
 ### Partnership Benefits
 - Faster iteration through collaborative development
 - Domain expertise from healthcare AI vendor partners
-- Shared go-to-market (GTM) across the Cisco/Webex ecosystem
+- Shared go-to-market (GTM) across the ecosystem
 - Early integration and validation opportunities
 
 ## Key Technologies
