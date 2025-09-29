@@ -78,7 +78,7 @@ async def _handle_triage_conversation(self, user_input):
 These decorators ensure that the entire execution flow of starting a triage or handling a triage conversation is captured as a distinct workflow span, allowing for end-to-end tracing of these complex interactions.
 
 ### `@task` Decorator
-While not explicitly used in the provided snippet for custom methods, the `@task` decorator is conceptually similar to `@workflow` but typically for smaller, more granular units of work within a workflow. The A2A protocol itself defines "tasks," and the `A2AInstrumentor` will likely create spans for these A2A tasks.
+The `@task` decorator is conceptually similar to `@workflow` but typically for smaller, more granular units of work within a workflow. The A2A protocol itself defines "tasks," and the `A2AInstrumentor` will likely create spans for these A2A tasks.
 
 ### `@tool` Decorator
 Tools represent external capabilities or specific functions the agent can invoke. Several methods are decorated as `@tool`:
