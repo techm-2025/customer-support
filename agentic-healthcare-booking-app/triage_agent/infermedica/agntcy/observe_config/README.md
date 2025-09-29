@@ -433,6 +433,5 @@ A critical step in the initialization process is the verification of the tracing
 ## References
 
 *   [ioa_observe SDK GitHub Repository](https://github.com/agntcy/observe/blob/main/README.md)
-*   [Observability Example](https://github.com/)
 
  
