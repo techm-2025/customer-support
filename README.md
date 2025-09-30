@@ -1,6 +1,6 @@
 # Customer Support— Multi-Agent Systems
 
-The Customer Support repository contains a collection of multi-agent system (MAS) applications built with [AGNTCY](https://github.com/agntcy)   components and open-source agentic AI frameworks. These projects demonstrate how AI agents can collaborate to automate end-to-end customer support workflows across different verticals — such as healthcare, retail, and insurance — using standardized protocols and orchestration patterns.
+The Customer Support repository contains a collection of multi-agent system (MAS) applications built with [AGNTCY components](https://github.com/agntcy) and open-source agentic AI frameworks. These projects demonstrate how AI agents can collaborate to automate end-to-end customer support workflows across different verticals — such as healthcare, retail, and insurance — using standardized protocols and orchestration patterns.
 
 ## Motivation
 
@@ -15,9 +15,9 @@ Each folder implements a customer support MAS application for a specific vertica
 
 # Agentic Healthcare Booking App
 
-The [Agentic-healthcare-booking app repository](https://github.com/techm-2025/customer-support/tree/main/agentic-healthcare-booking-app) is a reference implementation of a Healthcare Booking Multi-Agent System (MAS). It showcases how multiple AI agents can collaborate to handle appointment scheduling, symptom triage, and insurance policy management.
+The [agentic-healthcare-booking-app repository](https://github.com/techm-2025/customer-support/tree/main/agentic-healthcare-booking-app) is a reference implementation of a Healthcare Booking Multi-Agent System (MAS). It showcases how multiple AI agents can collaborate to handle appointment scheduling, symptom triage, and insurance policy management.
 
-Built with [AGNTCY](https://github.com/agntcy) components and open-source agentic AI frameworks, this project demonstrates practical patterns for agent-to-agent communication, orchestration, identity, and observability in a real-world vertical.
+Built with [AGNTCY components](https://github.com/agntcy) and open-source agentic AI frameworks, this project demonstrates practical patterns for agent-to-agent communication, orchestration, identity, and observability in a real-world vertical.
 
 ## Domain Relevance
 Healthcare is a structured, high-stakes environment that highlights the need for multi-agent collaboration. Appointment workflows, triage decisions, and insurance queries are concrete examples of tasks where specialized agents must coordinate seamlessly.
@@ -48,16 +48,16 @@ By implementing with AGNTCY standards, the system demonstrates:
   - Protocol for structured inter-agent communication and tool calls.
 - **Agent-to-Agent (A2A) Messaging**
   - Peer-to-peer agent communication for distributed workflows.
-- **AGNTCY Core Components**
+- **AGNTCY: Core Components**
   - **OASF & Agent Directory** → Registry and discovery
-  - **Identity** → Authentication, agent cards, Task-based Access Control (TBAC)
+  - **Identity** → Authentication, agent cards, TBAC
   - **Observability** → Metrics, schema validation, runtime monitoring
 
 # Implementation Overview
 - **MAS Development** → Core multi-agent architecture
-- **Agent-to-Agent Messaging (A2A)** → Coordination between agents
+- **Agent-to-Agent (A2A) Messaging** → Coordination between agents
 - **MCP Protocol Integration** → Standardized tool calls and context sharing
-- **Identity Layer** → Authentication & role-based access
+- **Identity Layer** → Authentication & TBAC
 - **Observability Stack** → Runtime monitoring and schema validation
 
 ## Installation
@@ -73,7 +73,7 @@ By implementing with AGNTCY standards, the system demonstrates:
 - cp .env.example .env # Edit .env with your configuration
 
 ### Next Steps
-- Review the  AGNTCY [documentation](https://github.com/agntcy) for details on MAS components.
+- Review the [AGNTCY documentation](https://docs.agntcy.org) for details on MAS components.
 - Explore the /agents directory to see implementations of booking, triage, and insurance agents.
 - Extend the system with new agents or protocols to test interoperability.
 
