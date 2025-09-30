@@ -106,11 +106,11 @@ Standard Appointment Scheduling Sequence
 
 **Greeting:** Welcome message and request for patient name
 **Demographics Collection:**
-- Full name
-- Phone number
-- Reason for visit
-- Date of birth
-- State of residence\
+  - Full name
+  - Phone number
+  - Reason for visit
+  - Date of birth
+  - State of residence\
 **Insurance Discovery:** Trigger API when name + DOB + state available\
 **Provider Information:** Collect provider name\
 **Eligibility Check:** Verify coverage with provider details\
