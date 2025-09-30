@@ -1,4 +1,4 @@
-# customer-support
+# Customer Support— Multi-Agent Systems
 
 The Customer Support repository contains a collection of multi-agent system (MAS) applications built with [AGNTCY](https://github.com/agntcy)   components and open-source agentic AI frameworks. These projects demonstrate how AI agents can collaborate to automate end-to-end customer support workflows across different verticals — such as healthcare, retail, and insurance — using standardized protocols and orchestration patterns.
 
