@@ -53,18 +53,18 @@ Interfaces with insurance verification services using JSON-RPC 2.0 protocol.
 - **Discovery API:** Identifies patient's insurance payer and policy information
 - **Eligibility API:** Verifies coverage and extracts co-pay/deductible details
 
-**API Payload Structure:**
-json{
-  "jsonrpc": "2.0",
-  "id": "discovery_20250930_143022",
-  "method": "tools/call",
-  "params": {
-    "patientFirstName": "John",
-    "patientLastName": "Doe",
-    "patientDateOfBirth": "1990-01-15",
-    "patientState": "California"
-  }
-}
+**API Payload Structure:**\
+json{\
+  "jsonrpc": "2.0",\
+  "id": "discovery_20250930_143022",\
+  "method": "tools/call",\
+  "params": {\
+    "patientFirstName": "John",\
+    "patientLastName": "Doe",\
+    "patientDateOfBirth": "1990-01-15",\
+    "patientState": "California"\
+  }\
+}\
 
 **Response Processing:**
 - Automatic data extraction using regex patterns
