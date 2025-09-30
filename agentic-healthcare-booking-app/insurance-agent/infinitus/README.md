@@ -64,7 +64,7 @@ json{\
     "patientDateOfBirth": "1990-01-15",\
     "patientState": "California"\
   }\
-}\
+}
 
 **Response Processing:**
 - Automatic data extraction using regex patterns
@@ -75,12 +75,12 @@ json{\
 #### 4. LLM Integration (IntelligentLLM class)
 Manages conversation flow using a language model API.
 
-**Configuration:**
-python
-{
-  "max_tokens": 500,
-  "temperature": 0.2,  # Low for consistent healthcare responses
-  "top_p": 0.9
+**Configuration:**\
+python\
+{\
+  "max_tokens": 500,\
+  "temperature": 0.2,  # Low for consistent healthcare responses\
+  "top_p": 0.9\
 }
 
 **Prompt Engineering:**
@@ -89,13 +89,13 @@ python
 - API result interpretation instructions
 - JSON-structured response requirements
 
-**Response Format:**
-json{
-  "response": "Natural language response to patient",
-  "extract": {"field_name": "extracted_value"},
-  "api_call": "discovery|eligibility|none",
-  "api_data": {"relevant": "data"},
-  "done": false
+**Response Format:**\
+json{\
+  "response": "Natural language response to patient",\
+  "extract": {"field_name": "extracted_value"},\
+  "api_call": "discovery|eligibility|none",\
+  "api_data": {"relevant": "data"},\
+  "done": false\
 }
 
 #### 5. Main Agent (HealthcareVoiceAgent class)
@@ -110,49 +110,49 @@ Standard Appointment Scheduling Sequence
 - Phone number
 - Reason for visit
 - Date of birth
-- State of residence
-**Insurance Discovery: ** Trigger API when name + DOB + state available
-**Provider Information: ** Collect provider name
-**Eligibility Check:** Verify coverage with provider details
-**Insurance Announcement:** Present payer, policy ID, co-pay information
-**Appointment Scheduling:** Get preferred date and time
-**Confirmation:** Generate 5-digit alphanumeric code
+- State of residence\
+**Insurance Discovery:** Trigger API when name + DOB + state available\
+**Provider Information:** Collect provider name\
+**Eligibility Check:** Verify coverage with provider details\
+**Insurance Announcement:** Present payer, policy ID, co-pay information\
+**Appointment Scheduling:** Get preferred date and time\
+**Confirmation:** Generate 5-digit alphanumeric code\
 **Closing:** Thank patient and end call
 
 **Data Flow Diagram**
-User Speech → Audio.listen() → Speech Recognition
-                                      ↓
-LLM Processing ← Session Data ← Transcribed Text
-      ↓
-Decision: API Call Needed?
-      ↓
-  Yes → MCP API Call → Store Results → LLM Announcement
-      ↓
-  No → Direct Response
-      ↓
+User Speech → Audio.listen() → Speech Recognition\
+                                      ↓\
+LLM Processing ← Session Data ← Transcribed Text\
+      ↓\
+Decision: API Call Needed?\
+      ↓\
+  Yes → MCP API Call → Store Results → LLM Announcement\
+      ↓\
+  No → Direct Response\
+      ↓\
 Audio.speak() → TTS → Patient Hears Response
 
 **Configuration Requirements**
-Environment Variables  
-Create a .env file with the following variables:  
-bash  
-LLM API Configuration  
-JWT_TOKEN=your_jwt_token_here  
-ENDPOINT_URL=https://your-llm-endpoint.com/v1/chat/completions  
-PROJECT_ID=your_project_id  
+Environment Variables\
+Create a .env file with the following variables:  \
+bash  \
+LLM API Configuration  \
+JWT_TOKEN=your_jwt_token_here  \
+ENDPOINT_URL=https://your-llm-endpoint.com \
+PROJECT_ID=your_project_id  \
 CONNECTION_ID=your_connection_id  
 
 Insurance API Configuration  
-MCP_URL=https://your-mcp-server.com/jsonrpc  
+MCP_URL=https://your-mcp-server.com \
 X_INF_API_KEY=your_insurance_api_key  
 
 **Python Dependencies  **
-bash  
-pip install requests  
-pip install SpeechRecognition  
-pip install gTTS  
-pip install pygame  
-pip install pyttsx3  
+bash  \
+pip install requests  \
+pip install SpeechRecognition  \
+pip install gTTS  \
+pip install pygame  \
+pip install pyttsx3 \ 
 pip install python-dotenv  
 
 **System Requirements**  
@@ -189,11 +189,9 @@ pip install python-dotenv
 
 **Data Formats**
 - Date of Birth Formatting
-  The system automatically converts various DOB formats to YYYY-MM-DD:  
-  MM/DD/YYYY → YYYY-MM-DD  
-  MM-DD-YYYY → YYYY-MM-DD  
-  January 15, 1990 → 1990-01-15  
-  Jan 15 1990 → 1990-01-15  
+  The system automatically converts various DOB formats to YYYY-MM-DD:  \
+  MM/DD/YYYY → YYYY-MM-DD  \
+  MM-DD-YYYY → YYYY-MM-DD  \
 
 - Confirmation Code  
   Format: 5-character alphanumeric (e.g., A3X9K)  
@@ -202,27 +200,27 @@ pip install python-dotenv
 asyncio.run(main())
 
 **Programmatic Integration**
-python
-from healthcare_voice_agent import HealthcareVoiceAgent
+python\
+from healthcare_voice_agent import HealthcareVoiceAgent\
 
-agent = HealthcareVoiceAgent(
-    jwt_token="your_token",
-    endpoint_url="your_endpoint",
-    project_id="your_project",
-    connection_id="your_connection",
-    mcp_url="your_mcp_url",
-    insurance_api_key="your_api_key"
+agent = HealthcareVoiceAgent(\
+    jwt_token="your_token",\
+    endpoint_url="your_endpoint",\
+    project_id="your_project",\
+    connection_id="your_connection",\
+    mcp_url="your_mcp_url",\
+    insurance_api_key="your_api_key"\
 )
 
 await agent.start_intelligent_conversation()
 
 **Logging**
-Log Levels  
+Log Levels  \
 - INFO: Standard operational messages
 - WARNING: Non-critical issues (TTS fallback, cleanup issues)
 - ERROR: API failures, speech recognition errors
 
-Log Format
+Log Format\
 2025-09-30 14:30:22 - module_name - LEVEL - message
 
 **Console Output Features**
@@ -240,39 +238,39 @@ Log Format
 - Audio Processing: Speech processed in real-time, no permanent audio storage
 
 **Performance Optimization**
-Speech Recognition:
+Speech Recognition:\
 - Dynamic energy threshold adjustment
 - Ambient noise calibration on startup
 - Multi-attempt recognition strategy
 
-API Calls:
+API Calls:\
 - 45-second timeout to prevent hanging
 - Async execution to prevent blocking
 - Duration tracking for performance monitoring
 
-TTS Optimization:
+TTS Optimization:\
 - Pygame mixer for low-latency audio
 - Number-to-digit conversion for clarity
 - Protected pattern recognition (times, measurements)
 
-**Troubleshooting**  
-Common Issues  
-**Microphone not detected:**  
-python # Check available microphones  
-import speech_recognition as sr  
+**Troubleshooting**  \
+Common Issues  \
+**Microphone not detected:** \ 
+python # Check available microphones  \
+import speech_recognition as sr  \
 print(sr.Microphone.list_microphone_names())  
 
-**TTS not working:**  
-Check pygame mixer initialization  
-Verify audio output device  
+**TTS not working:**  \
+Check pygame mixer initialization  \
+Verify audio output device  \
 Ensure no other applications blocking audio  
 
-**API timeouts:**  
-Increase timeout values in call_insurance_api()  
-Check network connectivity  
+**API timeouts:**  \
+Increase timeout values in call_insurance_api()  \
+Check network connectivity  \
 Verify API endpoint availability  
 
-**LLM JSON parsing errors:**  
-Review prompt engineering  
-Check temperature settings (lower = more consistent)  
+**LLM JSON parsing errors:**  \
+Review prompt engineering  \
+Check temperature settings (lower = more consistent)  \
 Validate response format requirements  
