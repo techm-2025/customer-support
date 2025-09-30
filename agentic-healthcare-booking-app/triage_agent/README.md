@@ -8,12 +8,6 @@ This repository contains two complementary medical triage agents designed to aut
 
 Both agents implement Agent-to-Agent (A2A) communication protocols for seamless integration into healthcare automation pipelines.
 
-## Repository Structure
-triage_agent/
-├── infermedica/                    # Infermedica API integration agent
-├── medical-triage/                 # GPT-4o intelligent triage agent
-└── README.md                       # This file
-
 ## Agent Architectures
 ### 1. Infermedica Agent
 **Technology Stack:**
@@ -33,7 +27,7 @@ triage_agent/
 - Evidence-based triage routing
 - Clinical decision support
 
-**Architecture**\
+**Architecture:**\
 Patient Input → A2A Protocol → Infermedica Wrapper → Infermedica API → Triage Response
 
 ### 2. Medical Triage Agent
@@ -61,11 +55,10 @@ Patient Input → A2A Protocol → GPT-4o Intelligence\
                                       ↓\
                               Triage Response
                               
-## Agent-to-Agent (A2A) Integration\
+## Agent-to-Agent (A2A) Integration
 Both agents implement standardized A2A protocols enabling:
 - **Interoperability:** Seamless communication between agents
 - **Workflow Orchestration:** Chain multiple agents for complex triage
 - **Data Standardization:** Consistent input/output formats
 - **Scalability:** Easy deployment across distributed systems
-- **Monitoring:** Unified observability across agent interactions
 
