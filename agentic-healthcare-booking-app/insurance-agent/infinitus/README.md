@@ -105,12 +105,14 @@ Orchestrates all components to manage the complete conversation lifecycle.
 Standard Appointment Scheduling Sequence
 
 **Greeting:** Welcome message and request for patient name
-**Demographics Collection:**
+
+**Demographics Collection:**\
   - Full name
   - Phone number
   - Reason for visit
   - Date of birth
-  - State of residence\
+  - State of residence
+
 **Insurance Discovery:** Trigger API when name + DOB + state available\
 **Provider Information:** Collect provider name\
 **Eligibility Check:** Verify coverage with provider details\
@@ -132,7 +134,7 @@ Decision: API Call Needed?\
       ↓\
 Audio.speak() → TTS → Patient Hears Response
 
-**Configuration Requirements**
+**Configuration Requirements**\
 Environment Variables\
 Create a .env file with the following variables:  \
 bash  \
@@ -146,13 +148,13 @@ Insurance API Configuration
 MCP_URL=https://your-mcp-server.com \
 X_INF_API_KEY=your_insurance_api_key  
 
-**Python Dependencies  **
+**Python Dependencies**\
 bash  \
 pip install requests  \
 pip install SpeechRecognition  \
 pip install gTTS  \
 pip install pygame  \
-pip install pyttsx3 \ 
+pip install pyttsx3  \ 
 pip install python-dotenv  
 
 **System Requirements**  
@@ -191,7 +193,7 @@ pip install python-dotenv
 - Date of Birth Formatting
   The system automatically converts various DOB formats to YYYY-MM-DD:  \
   MM/DD/YYYY → YYYY-MM-DD  \
-  MM-DD-YYYY → YYYY-MM-DD  \
+  MM-DD-YYYY → YYYY-MM-DD
 
 - Confirmation Code  
   Format: 5-character alphanumeric (e.g., A3X9K)  
@@ -199,7 +201,7 @@ pip install python-dotenv
 #### Run the agent
 asyncio.run(main())
 
-**Programmatic Integration**
+**Programmatic Integration**\
 python\
 from healthcare_voice_agent import HealthcareVoiceAgent\
 
@@ -214,7 +216,7 @@ agent = HealthcareVoiceAgent(\
 
 await agent.start_intelligent_conversation()
 
-**Logging**
+**Logging**\
 Log Levels  \
 - INFO: Standard operational messages
 - WARNING: Non-critical issues (TTS fallback, cleanup issues)
@@ -237,25 +239,25 @@ Log Format\
 - Patient Privacy: All data stored locally, not transmitted except to configured APIs
 - Audio Processing: Speech processed in real-time, no permanent audio storage
 
-**Performance Optimization**
-Speech Recognition:\
+**Performance Optimization**\
+Speech Recognition:
 - Dynamic energy threshold adjustment
 - Ambient noise calibration on startup
 - Multi-attempt recognition strategy
 
-API Calls:\
+API Calls:
 - 45-second timeout to prevent hanging
 - Async execution to prevent blocking
 - Duration tracking for performance monitoring
 
-TTS Optimization:\
+TTS Optimization:
 - Pygame mixer for low-latency audio
 - Number-to-digit conversion for clarity
 - Protected pattern recognition (times, measurements)
 
 **Troubleshooting**  \
 Common Issues  \
-**Microphone not detected:** \ 
+**Microphone not detected:**\
 python # Check available microphones  \
 import speech_recognition as sr  \
 print(sr.Microphone.list_microphone_names())  
