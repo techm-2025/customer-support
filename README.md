@@ -11,13 +11,13 @@ Customer support is one of the highest-value domains for AI agents:
 
 ### Repository Structure
 Each folder implements a customer support MAS application for a specific vertical:
-- /agentic-healthcare-booking-app → Multi-agent system for healthcare appointment scheduling, symptom triage, and insurance queries.
+- /healthcare-booking-app → Multi-agent system for healthcare appointment scheduling, symptom triage, and insurance queries.
 
-# Agentic Healthcare Booking App
+# Healthcare Booking App
 
-The [agentic-healthcare-booking-app repository](https://github.com/techm-2025/customer-support/tree/main/agentic-healthcare-booking-app) is a reference implementation of a Healthcare Booking Multi-Agent System (MAS). It showcases how multiple AI agents can collaborate to handle appointment scheduling, symptom triage, and insurance policy management.
+The [healthcare-booking-app repository](https://github.com/techm-2025/customer-support/tree/main/healthcare-booking-app) is a reference implementation of a Healthcare Booking Multi-Agent System (MAS). It showcases how multiple AI agents can collaborate to handle appointment scheduling, symptom triage, and insurance policy management.
 
-Built with [AGNTCY components](https://github.com/agntcy) and open-source agentic AI frameworks, this project demonstrates practical patterns for agent-to-agent communication, orchestration, identity, and observability in a real-world vertical.
+Built with [AGNTCY components](https://github.com/agntcy) — an open-source framework, this project demonstrates practical patterns for agent-to-agent communication, orchestration, identity, and observability in a real-world vertical.
 
 ## Domain Relevance
 Healthcare is a structured, high-stakes environment that highlights the need for multi-agent collaboration. Appointment workflows, triage decisions, and insurance queries are concrete examples of tasks where specialized agents must coordinate seamlessly.
@@ -62,8 +62,8 @@ By implementing with AGNTCY standards, the system demonstrates:
 
 ## Installation
 **1. Clone the repository**
-- git clone [repository-url](https://github.com/techm-2025/customer-support/tree/main/agentic-healthcare-booking-app)
-- cd agentic-healthcare-booking-app
+- git clone [repository-url](https://github.com/techm-2025/customer-support/tree/main/healthcare-booking-app)
+- cd healthcare-booking-app
 
 **2. Install dependencies**
 - pip install -r requirements.txt
