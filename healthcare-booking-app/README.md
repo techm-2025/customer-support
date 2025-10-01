@@ -1,4 +1,4 @@
-# Agentic Healthcare Booking Application
+# Healthcare Booking Application
 
 A comprehensive healthcare booking and management system built with autonomous agents for insurance verification, medical triage, and voice interactions.
 
