@@ -1,149 +1,17 @@
-"""
-A2A Medical Triage Service with TBAC and Observe Integration
-"""
-
 import json
 import os
 import re
-import base64
 import uuid
-import time
 import logging
 from datetime import datetime
-from typing import Dict, Optional, List, Any
-from enum import Enum
-
-import requests
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from ioa_observe.sdk.decorators import tool, task, workflow, agent
+from models.task_state import TaskState
+from services.triage_client import TriageClient
+from config.tbac_config import TBACConfig
 
-# TBAC imports
-from dotenv import load_dotenv
-from identityservice.sdk import IdentityServiceSdk
-from ioa_observe.sdk.decorators import agent, tool, workflow, task
-from ioa_observe.sdk import Observe
-from ioa_observe.sdk.instrumentations.a2a import A2AInstrumentor
-from observe_config.observe_config import initialize_observability
-
-# Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
 logger = logging.getLogger(__name__)
-
-class TaskState(str, Enum):
-    """A2A Task States as defined in the Agent-to-Agent protocol"""
-    SUBMITTED = "submitted"
-    WORKING = "working"
-    INPUT_REQUIRED = "input-required"
-    COMPLETED = "completed"
-    CANCELED = "canceled"
-    FAILED = "failed"
-    REJECTED = "rejected"
-    AUTH_REQUIRED = "auth-required"
-    UNKNOWN = "unknown"
-
-class TBACConfig:
-    """TBAC configuration and authorization handler"""
-    
-    def __init__(self):
-        load_dotenv()
-        
-        # TBAC credentials
-        self.client_api_key = os.getenv('CLIENT_AGENT_API_KEY')
-        self.client_id = os.getenv('CLIENT_AGENT_ID')
-        self.a2a_api_key = os.getenv('A2A_SERVICE_API_KEY')
-        self.a2a_id = os.getenv('A2A_SERVICE_ID')
-        
-        self.client_sdk = None
-        self.a2a_sdk = None
-        self.client_authorized = False
-        self.a2a_authorized = False
-        self.client_token = None
-        self.a2a_token = None
-        
-        self._setup()
-    
-    def _setup(self):
-        """Initialize TBAC SDKs"""
-        if not all([self.client_api_key, self.client_id, self.a2a_api_key, self.a2a_id]):
-            logger.warning("TBAC Disabled: Missing credentials")
-            return
-        
-        try:
-            self.client_sdk = IdentityServiceSdk(api_key=self.client_api_key)
-            self.a2a_sdk = IdentityServiceSdk(api_key=self.a2a_api_key)
-        except Exception as e:
-            logger.error(f"TBAC setup failed: {e}")
-    
-    def authorize_client_to_a2a(self):
-        """Authorize client agent to communicate with A2A service"""
-        if not self.client_sdk or not self.a2a_sdk:
-            return True
-        
-        try:
-            self.client_token = self.client_sdk.access_token(agentic_service_id=self.a2a_id)
-            
-            if not self.client_token:
-                logger.error("TBAC FAILED: Could not get client agent token")
-                return False
-            
-            
-            self.client_authorized = self.a2a_sdk.authorize(self.client_token)
-            
-            if self.client_authorized:
-                return True
-            else:
-                logger.error("TBAC FAILED: client agent not authorized by A2A service")
-                return False
-                
-        except Exception as e:
-            logger.error(f"TBAC client-to-a2a authorization failed: {e}")
-            return False
-    
-    def authorize_a2a_to_client(self):
-        """Authorize A2A service to communicate with client agent"""
-        if not self.client_sdk or not self.a2a_sdk:
-            return True
-        
-        try:
-            self.a2a_token = self.a2a_sdk.access_token(agentic_service_id=self.client_id)
-            
-            if not self.a2a_token:
-                logger.error("TBAC FAILED: Could not get A2A service token")
-                return False
-            
-            
-            self.a2a_authorized = self.client_sdk.authorize(self.a2a_token)
-            
-            if self.a2a_authorized:
-                return True
-            else:
-                logger.error("TBAC FAILED: A2A service not authorized by client agent")
-                return False
-                
-        except Exception as e:
-            logger.error(f"TBAC A2A-to-client authorization failed: {e}")
-            return False
-    
-    def authorize_bidirectional(self):
-        """Perform bidirectional authorization"""
-        client_to_a2a = self.authorize_client_to_a2a()
-        a2a_to_client = self.authorize_a2a_to_client()
-        return client_to_a2a and a2a_to_client
-    
-    def is_client_authorized(self):
-        """Check if client agent is authorized to communicate with A2A service"""
-        return self.client_authorized or not all([self.client_api_key, self.a2a_api_key])
-    
-    def is_a2a_authorized(self):
-        """Check if A2A service is authorized to communicate with client agent"""
-        return self.a2a_authorized or not all([self.client_api_key, self.a2a_api_key])
-    
-    def is_fully_authorized(self):
-        """Check if both directions are authorized"""
-        return self.is_client_authorized() and self.is_a2a_authorized()
 
 @agent(name='a2a_triage_service', description='A2A Medical Triage Service', version='1.0.0', protocol="A2A")
 class A2ATriageService:
@@ -174,6 +42,9 @@ class A2ATriageService:
         
         # Load triage API configuration
         self._load_triage_config()
+
+        # Initialize TriageClient
+        self.triage_client = TriageClient(self)
         
         # Setup Flask routes
         self._setup_routes()
@@ -210,25 +81,6 @@ class A2ATriageService:
             {"tbac_error": True, "operation": operation}
         )
     
-    def _timed_external_request(self, method, url, description, **kwargs):
-        """Make a timed request to external API"""
-        try:
-            if method == 'GET':
-                response = requests.get(url, **kwargs)
-            elif method == 'POST':
-                response = requests.post(url, **kwargs)
-            else:
-                raise ValueError(f"Unsupported method: {method}")
-            
-            if response.status_code != 200:
-                logger.error(f"External API error: {response.status_code} - {response.text[:300]}")
-            
-            return response, 0
-            
-        except Exception as e:
-            logger.error(f"External API request failed: {e}")
-            raise e
-
     def _load_triage_config(self):
         """Load external triage API configuration from environment variables"""
         required_vars = [
@@ -249,8 +101,6 @@ class A2ATriageService:
         if missing_vars:
             raise ValueError(f"Missing required environment variables: {missing_vars}")
         
-    
-
     def require_auth(self, f):
         """Decorator to require X-Shared-Key authentication"""
         def decorated_function(*args, **kwargs):
@@ -275,7 +125,7 @@ class A2ATriageService:
         
         decorated_function.__name__ = f.__name__
         return decorated_function
-
+    
     def _setup_routes(self):
         """Setup Flask routes for A2A protocol endpoints"""
         
@@ -463,6 +313,7 @@ class A2ATriageService:
             "id": request_id,
             "result": result
         }
+    
     @task(name="handle_a2a_message", description="process incoming a2a message from agent", version=1)
     def _handle_message_send(self, params, request_id):
         try:
@@ -648,7 +499,7 @@ class A2ATriageService:
                 print("A2A-SERVICE: Triage completed - changing to COMPLETED state")
                 task['status']['state'] = TaskState.COMPLETED
               
-                summary_result = self._get_triage_summary(task)
+                summary_result = self.triage_client._get_triage_summary(task)
                 artifact_data = {
                     "urgency_level": summary_result.get('urgency_level', 'standard'),
                     "doctor_type": summary_result.get('doctor_type', 'general practitioner'),
@@ -721,7 +572,7 @@ class A2ATriageService:
                     "error":True,
                     "action":"triage_message_failed"
                 }
-    
+        
     @tool(name="extract_demographics")
     def _extract_demographics(self, text):
         """Extract age and sex from user input text"""
@@ -755,10 +606,10 @@ class A2ATriageService:
     def _start_triage_session(self, age, sex, complaint, task):
         """Start a new triage session with external API"""
         try:
-            token = self._get_triage_token()
-            survey_id = self._create_triage_survey(token, age, sex)
+            token = self.triage_client._get_triage_token()
+            survey_id = self.triage_client._create_triage_survey(token, age, sex)
             
-            initial_response = self._send_triage_api_message(token, survey_id, complaint)
+            initial_response = self.triage_client._send_triage_api_message(token, survey_id, complaint)
             
             return {
                 'success': True,
@@ -779,120 +630,12 @@ class A2ATriageService:
             token = task['metadata']['triage_token']
             survey_id = task['metadata']['survey_id']
             
-            result = self._send_triage_api_message(token, survey_id, message)
+            result = self.triage_client._send_triage_api_message(token, survey_id, message)
             return result
         except Exception as e:
             logger.error(f"Error sending triage message: {e}", exc_info=True)
             return {'success': False, 'error': str(e)}
-    
-    def _get_triage_summary(self, task):
-        """Get triage summary from external API with timing"""
-        try:
-            token = task['metadata']['triage_token']
-            survey_id = task['metadata']['survey_id']
-            
-            headers = {"Authorization": f"Bearer {token}"}
-            
-            response, elapsed = self._timed_external_request(
-                'GET', f"{self.triage_base_url}/surveys/{survey_id}/summary", 
-                "Get Triage Summary",
-                headers=headers, timeout=30
-            )
-            
-            if response.status_code == 200:
-                data = response.json()
-                return {
-                    'success': True,
-                    'urgency_level': data.get('urgency', 'standard'),
-                    'doctor_type': data.get('doctor_type', 'general practitioner'),
-                    'notes': data.get('notes', 'Assessment completed')
-                }
-            else:
-                logger.warning(f"Failed to get triage summary: {response.status_code}")
-                return {'success': False}
-        except Exception as e:
-            logger.error(f"Error getting triage summary: {e}", exc_info=True)
-            return {'success': False}
-    
-    def _get_triage_token(self):
-        """Get authentication token from external triage API with timing"""
         
-        creds = base64.b64encode(f"{self.triage_app_id}:{self.triage_app_key}".encode()).decode()
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Basic {creds}",
-            "instance-id": self.triage_instance_id
-        }
-        payload = {"grant_type": "client_credentials"}
-        
-        response, elapsed = self._timed_external_request(
-            'POST', self.triage_token_url, "Get OAuth Token",
-            headers=headers, json=payload, timeout=30
-        )
-        
-        if response.status_code == 200:
-            token = response.json()['access_token']
-            return token
-        
-        raise Exception(f"Failed to get token: {response.status_code} - {response.text}")
-    
-    @task(name="create_triage_survey", description="create a new triage survey session", version=1)
-    def _create_triage_survey(self, token, age, sex):
-        """Create a new triage survey with timing"""
-        
-        headers = {
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json"
-        }
-        payload = {
-            "sex": sex.lower(),
-            "age": {"value": age, "unit": "year"}
-        }
-        
-        response, elapsed = self._timed_external_request(
-            'POST', f"{self.triage_base_url}/surveys", "Create Survey",
-            headers=headers, json=payload, timeout=30
-        )
-        
-        if response.status_code == 200:
-            survey_id = response.json()['survey_id']
-            return survey_id
-        
-        raise Exception(f"Failed to create survey: {response.status_code} - {response.text}")
-    
-    def _send_triage_api_message(self, token, survey_id, message):
-        """Send message to external triage API with timing"""
-        
-        headers = {
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json"
-        }
-        payload = {"user_message": message}
-        
-        response, elapsed = self._timed_external_request(
-            'POST', f"{self.triage_base_url}/surveys/{survey_id}/messages", 
-            "Send Message",
-            headers=headers, json=payload, timeout=30
-        )
-        
-        if response.status_code == 200:
-            data = response.json()
-            external_state = data.get('survey_state', 'in_progress')
-            agent_response = data.get('assistant_message', '')
-            
-            
-            return {
-                "success": True,
-                "response": agent_response,
-                "state": external_state
-            }
-        else:
-            logger.error(f"Triage API error: {response.status_code} - {response.text}")
-            return {
-                "success": False,
-                "response": "I'm having trouble with the medical assessment system."
-            }
-    
     def _handle_tasks_get(self, params, request_id):
         """Handle tasks/get JSON-RPC method"""
         task_id = params.get('id')
@@ -942,31 +685,3 @@ class A2ATriageService:
             use_reloader=False
         )
 
-def main():
-    """Main entry point"""
-    import argparse
-    
-    parser = argparse.ArgumentParser(description='A2A Medical Triage Service with TBAC')
-    parser.add_argument('--host', default='0.0.0.0', help='Host to bind to (default: 0.0.0.0)')
-    parser.add_argument('--port', type=int, default=8887, help='Port to bind to (default: 8887)')
-    parser.add_argument('--debug', action='store_true', help='Enable debug mode')
-    parser.add_argument('--disable-tbac', action='store_true', help='Disable TBAC authorization')
-    
-    args = parser.parse_args()
-    
-    try:
-        initialize_observability("a2a_triage_service")
-        A2AInstrumentor().instrument()
-        service = A2ATriageService(
-            host=args.host,
-            port=args.port,
-            debug=args.debug,
-            enable_tbac=not args.disable_tbac
-        )
-        service.run()
-    except Exception as e:
-        logger.error(f"Failed to start service: {e}", exc_info=True)
-        exit(1)
-
-if __name__ == "__main__":
-    main()

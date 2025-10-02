@@ -169,7 +169,7 @@ wait_for_services() {
 # Display final information
 show_completion() {
     # Attempt to get public IP, useful for cloud deployments
-    local PUBLIC_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4 2>/dev/null || echo "localhost")
+    local PUBLIC_IP=$(curl -s http://0.0.0.0/latest/meta-data/public-ipv4 2>/dev/null || echo "localhost")
     
     echo ""
     echo "Deployment completed successfully!"

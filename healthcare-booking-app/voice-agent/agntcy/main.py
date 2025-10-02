@@ -7,6 +7,14 @@ from services.audio_service import AUDIO_AVAILABLE
 
 load_env()
 
+def get_missing_env_vars(required_vars):
+    """
+    Generator function to yield missing environment variables from a given list.
+    """
+    for var in required_vars:
+        if not os.getenv(var):
+            yield var
+
 def run_agent():
     print("=" * 50)
     print("HEALTHCARE VOICE + A2A + MCP AGENT")
@@ -20,9 +28,9 @@ def run_agent():
     a2a_required = ['A2A_SERVICE_URL', 'A2A_MESSAGE_URL', 'A2A_API_KEY']
     
     missing = []
-    missing.extend([var for var in jwt_required if not os.getenv(var)])
-    missing.extend([var for var in insurance_required if not os.getenv(var)])
-    missing.extend([var for var in a2a_required if not os.getenv(var)])
+    missing.extend(get_missing_env_vars(jwt_required))
+    missing.extend(get_missing_env_vars(insurance_required))
+    missing.extend(get_missing_env_vars(a2a_required))
     
     if missing:
         print(f"ERROR: Missing config: {missing}")
