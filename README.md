@@ -75,10 +75,14 @@ By implementing with AGNTCY standards, the system demonstrates:
 **3. Configure environment**
 - cp .env.example .env # Edit .env with your configuration
 
-### Next Steps
+## Next Steps
 - Review the [AGNTCY documentation](https://docs.agntcy.org) for details on MAS components.
 - Explore the /agents directory to see implementations of booking, triage, and insurance agents.
 - Extend the system with new agents or protocols to test interoperability.
+
+## References
+1. AGNTCY documentation - (https://docs.agntcy.org)
+2. AGNTCY github repository - (https://github.com/agntcy)
 
 ## Contributing
 Contributions are welcome! Please open issues or pull requests to discuss improvements, bug fixes, or new agent integrations.
