@@ -81,8 +81,8 @@ By implementing with AGNTCY standards, the system demonstrates:
 - Extend the system with new agents or protocols to test interoperability.
 
 ## References
-1. AGNTCY documentation - (https://docs.agntcy.org)
-2. AGNTCY github repository - (https://github.com/agntcy)
+1. AGNTCY documentation - https://docs.agntcy.org
+2. AGNTCY github repository - https://github.com/agntcy
 
 ## Contributing
 Contributions are welcome! Please open issues or pull requests to discuss improvements, bug fixes, or new agent integrations.
