@@ -54,6 +54,9 @@ By implementing with AGNTCY standards, the system demonstrates:
   - **Observability** → Metrics, schema validation, runtime monitoring
 
 # Implementation Overview
+
+![arch3](https://github.com/user-attachments/assets/4b0036c6-e92a-4dfa-b40a-808ec5b1e290)
+
 - **MAS Development** → Core multi-agent architecture
 - **Agent-to-Agent (A2A) Messaging** → Coordination between agents
 - **MCP Protocol Integration** → Standardized tool calls and context sharing
