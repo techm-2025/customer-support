@@ -2,7 +2,7 @@ import asyncio
 import os
 from config.settings import load_env
 from agent.healthcare_agent import HealthcareAgent
-from config.observe_config import initialize_observability
+from common.agntcy.observe.observe_config import initialize_observability
 from services.audio_service import AUDIO_AVAILABLE
 
 load_env()

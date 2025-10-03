@@ -8,20 +8,21 @@ from ioa_observe.sdk.metrics.metrics import MetricsWrapper
 from ioa_observe.sdk.tracing.tracing import TracerWrapper
 from ioa_observe.sdk import Observe
 
-class OtlpHttpPort(Enum):
+
+class OtlpHttp(Enum):
     """
     Enum for standard OTLP HTTP receiver ports.
     4318 is typically used for OTLP/HTTP traces and logs.
     4317 is typically used for OTLP/HTTP metrics.
     """
-    TRACES_LOGS = "4318"
-    METRICS = "4317"
+    TRACES_PORT = "4318"
+    METRICS_PORT = "4317"
 
 def initialize_observability(service_name):
     """Initialize observability with proper configuration for observe services"""
     try:
         service_name = service_name
-        api_endpoint = os.getenv("OTLP_HTTP_ENDPOINT", f"http://localhost:{OtlpHttpPort.TRACES_LOGS.value}")
+        api_endpoint = os.getenv("OTLP_HTTP_ENDPOINT", f"http://localhost:{OtlpHttp.TRACES_PORT.value}")
         service_version = os.getenv("SERVICE_VERSION", "1.0.0")
         environment = os.getenv("ENVIRONMENT", "development")
 
@@ -51,7 +52,7 @@ def initialize_observability(service_name):
             headers={}
         )
 
-        metrics_endpoint = api_endpoint.replace(OtlpHttpPort.TRACES_LOGS.value, OtlpHttpPort.METRICS.value)
+        metrics_endpoint = api_endpoint.replace(OtlpHttp.TRACES_PORT.value, OtlpHttp.METRICS_PORT.value)
 
         MetricsWrapper.set_static_params(
             resource_attributes={

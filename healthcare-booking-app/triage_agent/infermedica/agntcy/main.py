@@ -2,7 +2,7 @@ import logging
 import argparse
 from config.settings import load_env
 from agent.traige_service import A2ATriageService
-from observe_config.observe_config import initialize_observability
+from common.agntcy.observe.observe_config import initialize_observability
 from ioa_observe.sdk.instrumentations.a2a import A2AInstrumentor
 
 logging.basicConfig(
