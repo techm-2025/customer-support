@@ -7,8 +7,8 @@ from datetime import datetime
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from ioa_observe.sdk.decorators import tool, task, workflow, agent
-from models.task_state import TaskState
-from services.triage_client import TriageClient
+from task_state import TaskState
+from triage_client import TriageClient
 from config.tbac_config import TBACConfig
 
 logger = logging.getLogger(__name__)

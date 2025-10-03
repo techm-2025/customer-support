@@ -9,6 +9,13 @@ class TriageClient:
     def __init__(self, service):
         self.service = service
 
+    def _conf(self, name):
+        """Get configuration value from self or fallback to service attributes."""
+        val = getattr(self, name, None)
+        if val is None and self.service:
+            val = getattr(self.service, name, None)
+        return val
+
     def _timed_external_request(self, method, url, description, **kwargs):
         """Make a timed request to external API"""
         try:
@@ -31,16 +38,26 @@ class TriageClient:
     def _get_triage_token(self):
         """Get authentication token from external triage API with timing"""
         
-        creds = base64.b64encode(f"{self.triage_app_id}:{self.triage_app_key}".encode()).decode()
+        # Read configuration from client first, then fallback to service-provided values
+        app_id = self._conf('triage_app_id')
+        app_key = self._conf('triage_app_key')
+        instance_id = self._conf('triage_instance_id')
+        token_url = self._conf('triage_token_url')
+
+        if not all([app_id, app_key, instance_id, token_url]):
+            logger.error("TriageClient configuration missing: triage_app_id/triage_app_key/triage_instance_id/triage_token_url required")
+            raise AttributeError("Missing triage client configuration")
+
+        creds = base64.b64encode(f"{app_id}:{app_key}".encode()).decode()
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Basic {creds}",
-            "instance-id": self.triage_instance_id
+            "instance-id": instance_id
         }
         payload = {"grant_type": "client_credentials"}
-        
+
         response, elapsed = self._timed_external_request(
-            'POST', self.triage_token_url, "Get OAuth Token",
+            'POST', token_url, "Get OAuth Token",
             headers=headers, json=payload, timeout=30
         )
         
@@ -63,8 +80,13 @@ class TriageClient:
             "age": {"value": age, "unit": "year"}
         }
         
+        triage_base = self._conf('triage_base_url')
+        if not triage_base:
+            logger.error("TriageClient missing triage_base_url configuration")
+            raise AttributeError("Missing triage_base_url")
+
         response, elapsed = self._timed_external_request(
-            'POST', f"{self.triage_base_url}/surveys", "Create Survey",
+            'POST', f"{triage_base}/surveys", "Create Survey",
             headers=headers, json=payload, timeout=30
         )
         
@@ -83,8 +105,13 @@ class TriageClient:
         }
         payload = {"user_message": message}
         
+        triage_base = self._conf('triage_base_url')
+        if not triage_base:
+            logger.error("TriageClient missing triage_base_url configuration")
+            return {"success": False, "response": "Triage service not configured"}
+
         response, elapsed = self._timed_external_request(
-            'POST', f"{self.triage_base_url}/surveys/{survey_id}/messages", 
+            'POST', f"{triage_base}/surveys/{survey_id}/messages", 
             "Send Message",
             headers=headers, json=payload, timeout=30
         )
@@ -115,8 +142,13 @@ class TriageClient:
             
             headers = {"Authorization": f"Bearer {token}"}
             
+            triage_base = self._conf('triage_base_url')
+            if not triage_base:
+                logger.error("TriageClient missing triage_base_url configuration")
+                return {'success': False}
+
             response, elapsed = self._timed_external_request(
-                'GET', f"{self.triage_base_url}/surveys/{survey_id}/summary", 
+                'GET', f"{triage_base}/surveys/{survey_id}/summary", 
                 "Get Triage Summary",
                 headers=headers, timeout=30
             )

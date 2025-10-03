@@ -1,9 +1,15 @@
 import asyncio
 import os
+import sys
+from pathlib import Path
 from config.settings import load_env
 from agent.healthcare_agent import HealthcareAgent
-from common.agntcy.observe.observe_config import initialize_observability
 from services.audio_service import AUDIO_AVAILABLE
+
+app_dir = Path(__file__).resolve().parent.parent.parent
+common_dir = app_dir/ 'common'
+sys.path.insert(0, str(common_dir))
+from agntcy.observe.observe_config import initialize_observability
 
 load_env()
 
@@ -11,9 +17,7 @@ def get_missing_env_vars(required_vars):
     """
     Generator function to yield missing environment variables from a given list.
     """
-    for var in required_vars:
-        if not os.getenv(var):
-            yield var
+    return (var for var in required_vars if not os.getenv(var))
 
 def run_agent():
     print("=" * 50)

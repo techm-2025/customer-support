@@ -6,16 +6,16 @@ Test scripts and utilities for validating the A2A Medical Triage Service, includ
 
 This repository contains two essential testing utilities:
 
-1. **Triage API Connection Test** (`triage_client.py`) - Validates connectivity and flow with the external medical triage API
-2. **TBAC Authorization Module** (`identity_client.py`) - Standalone TBAC implementation for testing bidirectional agent authorization
+1. **Triage API Connection Test** (`triage_util.py`) - Validates connectivity and flow with the external medical triage API
+2. **TBAC Authorization Module** (`identity_client_util.py`) - Standalone TBAC implementation for testing bidirectional agent authorization
 
 ## Files
 
-### 1. `triage_client.py`
+### 1. `triage_util.py`
 
 A comprehensive test script that validates the entire triage API workflow from authentication through assessment completion.
 
-### 2. `identity_client.py`
+### 2. `identity_client_util.py`
 
 A standalone TBAC implementation for testing agent-to-agent authorization without running the full service.
 
@@ -43,7 +43,7 @@ This script tests the complete medical triage API integration flow:
 
 #### Full Test Flow
 ```bash
-python triage_client.py
+python triage_util.py
 ```
 
 This runs the complete test sequence:
@@ -56,7 +56,7 @@ This runs the complete test sequence:
 
 #### Token-Only Test
 ```bash
-python triage_client.py token
+python triage_util.py token
 ```
 
 Quick test that only validates token acquisition - useful for checking credentials.
@@ -237,18 +237,18 @@ A2A_SERVICE_ID=a2a_service_id
 
 1. **Test External API Connection**:
    ```bash
-   python triage_client.py token  # Quick token test
-   python triage_client.py         # Full flow test
+   python triage_util.py token  # Quick token test
+   python triage_util.py         # Full flow test
    ```
 
 2. **Test TBAC Authorization** (if using TBAC):
    ```bash
-   python identity_client.py
+   python identity_client_util.py
    ```
 
 3. **Start Main Service**:
    ```bash
-   python identity_observe_wrapper_service.py
+   python main_service.py
    ```
 
 ## Troubleshooting

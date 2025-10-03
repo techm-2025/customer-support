@@ -40,7 +40,7 @@ The first step in enabling Observe is to initialize the SDK. This is typically d
 **Implementation:**
 ```python
 # In the main() entry point function
-from observe_config.observe_config import initialize_observability
+from agntcy.observe.observe_config import initialize_observability
 
 def main():
     # ...
@@ -48,6 +48,7 @@ def main():
     # ...
 ```
 The `initialize_observability("a2a_triage_service")` call sets up the necessary OpenTelemetry exporters and processors, configuring the service to send its telemetry data to the Observe backend under the service name "a2a_triage_service".
+For observe_config refer https://github.com/techm-2025/customer-support/tree/main/healthcare-booking-app/common/agntcy/observe/observe_config.py
 
 ### 2.2. A2A Protocol Instrumentation with `A2AInstrumentor`
 

@@ -181,12 +181,12 @@ cp .env.example .env
 
 4. Run the service
 ```bash
-python identity_observe_wrapper_service.py
+python main.py
 ```
 
 ### Command Line Options
 ```bash
-python identity_observe_wrapper_service.py [options]
+python main.py [options]
 
 Options:
   --host HOST          Host to bind to (default: 0.0.0.0)

@@ -1,9 +1,15 @@
 import logging
 import argparse
+import sys
+from pathlib import Path
 from config.settings import load_env
-from agent.traige_service import A2ATriageService
-from common.agntcy.observe.observe_config import initialize_observability
+from service.traige_service import A2ATriageService
 from ioa_observe.sdk.instrumentations.a2a import A2AInstrumentor
+
+app_dir = Path(__file__).resolve().parent.parent.parent.parent
+common_dir = app_dir/ 'common'
+sys.path.insert(0, str(common_dir))
+from agntcy.observe.observe_config import initialize_observability
 
 logging.basicConfig(
     level=logging.INFO,

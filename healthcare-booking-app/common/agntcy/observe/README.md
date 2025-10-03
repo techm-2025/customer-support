@@ -127,10 +127,10 @@ For local development, you will typically set up the following files:
         *   `docker-compose up -d`: Starts the services in detached mode.
         *   `docker-compose down`: Stops and removes the services.
         *   `docker-compose logs`: View logs from the services.
-    *   **Reference**: [https://github.com/techm-2025/customer-support/tree/main/agentic-healthcare-booking-app/triage-agent/infermedica/agntcy/observe-config/deploy/docker-compose.yml](https://github.com/techm-2025/customer-support/tree/main/agentic-healthcare-booking-app/triage-agent/infermedica/agntcy/observe-config/deploy/docker-compose.yml)
+    *   **Reference**: [https://github.com/techm-2025/customer-support/tree/main/agentic-healthcare-booking-app/common/agntcy/observe/deploy/docker-compose.yml](https://github.com/techm-2025/customer-support/tree/main/agentic-healthcare-booking-app/common/agntcy/observe/deploy/docker-compose.yml)
 *   **`otel-collector.yaml`**: Configuration for the OpenTelemetry Collector, specifying how it collects, processes, and exports traces, metrics, and logs (e.g., to ClickHouse).
     *   **Purpose**: To collect and transport telemetry data to the chosen backend.
-    *   **Reference**: [https://github.com/techm-2025/customer-support/tree/main/agentic-healthcare-booking-app/triage-agent/infermedica/agntcy/observe-config/deploy/otel/otel-collector.yaml](https://github.com/techm-2025/customer-support/tree/main/agentic-healthcare-booking-app/triage-agent/infermedica/agntcy/observe-config/deploy/otel/otel-collector.yaml)
+    *   **Reference**: [https://github.com/techm-2025/customer-support/tree/main/agentic-healthcare-booking-app/common/agntcy/observe/deploy/otel/otel-collector.yaml](https://github.com/techm-2025/customer-support/tree/main/agentic-healthcare-booking-app/common/agntcy/observe-/deploy/otel/otel-collector.yaml)
 
 ## Getting Started (Local Development)
 

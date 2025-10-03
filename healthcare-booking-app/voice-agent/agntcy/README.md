@@ -30,12 +30,11 @@ The Healthcare Voice + A2A + MCP Agent is designed to automate healthcare appoin
 The agent follows a modular architecture with clear separation of concerns:
 
 ```
-healthcare_agent/
+voice-agent/agntcy/
 ├── main.py                          # Entry point and initialization
 ├── config/
 │   ├── __init__.py
 │   └── settings.py                  # Environment configuration loader
-│   └── observe_config.py            # Observe intialization
 ├── models/
 │   ├── __init__.py
 │   ├── task_state.py                # A2A task state enumerations
@@ -58,7 +57,6 @@ healthcare_agent/
 
 ### Configuration Module (`config/`)
 *   **`settings.py`**: Contains the `load_env()` function that loads environment variables from a `.env` file using `python-dotenv`. This module has no business logic and is solely responsible for environment setup.
-*   **`observe_config.py`**: Contains the `initialize_observability()` function that will intializes the various components necessary for an application's observability, such as tracing, metrics, and logging systems.
 
 ### Models Module (`models/`)
 *   **`task_state.py`**: Defines the `TaskState` enum that represents all possible states of an A2A task according to the A2A specification (submitted, working, input-required, completed, canceled, failed, rejected, auth-required, unknown).
@@ -84,14 +82,15 @@ The core observability initialization happens in the `run_agent` function in `ma
 
 *   **Global Initialization** (`main.py`):
     ```python
-    from config.observe_config import initialize_observability
+    from agntcy.observe.observe_config import initialize_observability
     # ...
     def run_agent():
         # ...
         service_name = "Healthcare_Voice_Agent"
         initialize_observability(service_name)
     ```
-    This call sets up the foundational observability configuration for the entire agent, typically configuring OpenTelemetry exporters and resource attributes.
+    This call sets up the foundational observability configuration for the entire agent, typically configuring OpenTelemetry exporters and resource attributes. 
+    For observe_config refer https://github.com/techm-2025/customer-support/tree/main/healthcare-booking-app/common/agntcy/observe/observe_config.py
 
 *   **A2A Client Specific Initialization** (`services/a2a_client.py`):
     ```python
