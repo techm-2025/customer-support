@@ -8,8 +8,8 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from ioa_observe.sdk.decorators import tool, task, workflow, agent
 from task_state import TaskState
-from triage_client import TriageClient
-from config.tbac_config import TBACConfig
+from common.triage_client import TriageClient
+from common.tbac_config import TBACConfig
 
 logger = logging.getLogger(__name__)
 
@@ -446,7 +446,7 @@ class A2ATriageService:
             task['status']['state'] = TaskState.FAILED
             print(f"A2A-SERVICE: Triage start failed for task {task_id}")
             self.tasks[task_id] = task
-            error_response= self._create_success_response(request_id, task)
+            error_response= self._create_error_response(request_id, -32000, "Triage start failed for task")
             return {
                 **error_response,
                 "goto":"healthcare_voice_agent",
@@ -564,9 +564,9 @@ class A2ATriageService:
                 
         else:
             task['status']['state'] = TaskState.FAILED
-            success_response = self._create_success_response(request_id,task)
+            error_response = self._create_error_response(request_id, -32000, "Triage start failed for task")
             return{
-                    **success_response,
+                    **error_response,
                     "goto":"healthcare_voice_agent",
                     "success":False,
                     "error":True,
