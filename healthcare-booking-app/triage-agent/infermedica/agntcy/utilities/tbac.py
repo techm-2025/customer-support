@@ -1,3 +1,8 @@
+"""
+TBAC (Task-Based Access Control) utility class for managing secure communication
+between a client agent and an A2A (Agent-to-Agent) service using IdentityServiceSdk.
+"""
+
 import os
 import sys
 from dotenv import load_dotenv
@@ -110,7 +115,3 @@ class TBAC:
     def is_fully_authorized(self):
         # check of both directions are authorized
         return self.is_client_authorized() and self.is_a2a_authorized()
-
-
-# global TBAC instance
-tbac = TBAC()
