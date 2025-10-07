@@ -2,6 +2,7 @@ import asyncio
 import time,os
 import requests
 import uuid
+from http import HTTPStatus
 from ioa_observe.sdk import Observe
 from ioa_observe.sdk.decorators import tool
 from ioa_observe.sdk.tracing import session_start
@@ -42,7 +43,7 @@ class A2AClient:
             elapsed_ms = elapsed * 1000
             print(f"A2A-CLIENT: [{end_timestamp}] <<< {response.status_code} | {elapsed:.3f}s ({elapsed_ms:.0f}ms)")
             
-            if response.status_code != 200:
+            if response.status_code != HTTPStatus.OK:
                 print(f"A2A-CLIENT: Error response: {response.text[:200]}")
             else:
                 print(f"A2A-CLIENT: Success - response length: {len(response.text)} chars")
@@ -64,7 +65,7 @@ class A2AClient:
             loop = asyncio.get_event_loop()
             response, elapsed = await loop.run_in_executor(None, _request)
             
-            if response and response.status_code == 200:
+            if response and response.status_code == HTTPStatus.OK:
                 self.agent_card = response.json()
                 print(f"A2A-CLIENT: Discovered agent: {self.agent_card['name']}")
                 return True
@@ -127,7 +128,7 @@ class A2AClient:
             loop = asyncio.get_event_loop()
             response, elapsed = await loop.run_in_executor(None, _request)
             
-            if response and response.status_code == 200:
+            if response and response.status_code == HTTPStatus.OK:
                 data = response.json()
                 if 'result' in data:
                     result = data['result']

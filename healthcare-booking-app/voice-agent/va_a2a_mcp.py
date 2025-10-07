@@ -11,6 +11,7 @@ import string
 import tempfile
 import time
 from datetime import datetime
+from http import HTTPStatus
 from typing import Dict, Optional, List, Any
 from enum import Enum
 
@@ -243,7 +244,7 @@ class A2AClient:
             elapsed_ms = elapsed * 1000
             print(f"A2A-CLIENT: [{end_timestamp}] <<< {response.status_code} | {elapsed:.3f}s ({elapsed_ms:.0f}ms)")
             
-            if response.status_code != 200:
+            if response.status_code != HTTPStatus.OK:
                 print(f"A2A-CLIENT: Error response: {response.text[:200]}")
             else:
                 print(f"A2A-CLIENT: Success - response length: {len(response.text)} chars")
@@ -265,7 +266,7 @@ class A2AClient:
             loop = asyncio.get_event_loop()
             response, elapsed = await loop.run_in_executor(None, _request)
             
-            if response and response.status_code == 200:
+            if response and response.status_code == HTTPStatus.OK:
                 self.agent_card = response.json()
                 print(f"A2A-CLIENT: Discovered agent: {self.agent_card['name']}")
                 return True
@@ -327,7 +328,7 @@ class A2AClient:
             loop = asyncio.get_event_loop()
             response, elapsed = await loop.run_in_executor(None, _request)
             
-            if response and response.status_code == 200:
+            if response and response.status_code == HTTPStatus.OK:
                 data = response.json()
                 if 'result' in data:
                     result = data['result']
@@ -445,7 +446,7 @@ JSON response:
         loop = asyncio.get_event_loop()
         response = await loop.run_in_executor(None, _request)
         
-        if response.status_code == 200:
+        if response.status_code == HTTPStatus.OK:
             data = response.json()
             if 'choices' in data and data['choices']:
                 content = data['choices'][0]['message']['content']
@@ -528,7 +529,7 @@ class InsuranceClient:
         loop = asyncio.get_event_loop()
         response = await loop.run_in_executor(None, _request)
         
-        if response.status_code == 200:
+        if response.status_code == HTTPStatus.OK:
             data = response.json()
             
             if "result" in data:
@@ -586,7 +587,7 @@ class InsuranceClient:
         loop = asyncio.get_event_loop()
         response = await loop.run_in_executor(None, _request)
         
-        if response.status_code == 200:
+        if response.status_code == HTTPStatus.OK:
             data = response.json()
             
             if "result" in data:

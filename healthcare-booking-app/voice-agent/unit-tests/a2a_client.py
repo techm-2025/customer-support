@@ -4,6 +4,7 @@ import requests
 import json
 import uuid
 import time
+from http import HTTPStatus
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -47,7 +48,7 @@ class InteractiveA2AClient:
         
         response, elapsed = self.timed_request('GET', f"{self.base_url}/.well-known/agent-card.json", timeout=10)
         
-        if response and response.status_code == 200:
+        if response and response.status_code == HTTPStatus.OK:
             data = response.json()
             print(f"Agent Name: {data.get('name', 'Unknown')}")
             print(f"Description: {data.get('description', 'No description')}")
@@ -89,7 +90,7 @@ class InteractiveA2AClient:
         response, elapsed = self.timed_request('POST', self.message_url, 
                                              json=payload, headers=headers, timeout=30)
         
-        if response and response.status_code == 200:
+        if response and response.status_code == HTTPStatus.OK:
             data = response.json()
             print(f"Response: {json.dumps(data, indent=2)}")
             

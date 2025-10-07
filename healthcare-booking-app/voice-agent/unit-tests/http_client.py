@@ -3,6 +3,7 @@ import requests
 import json
 import base64
 import time
+from http import HTTPStatus
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -41,7 +42,7 @@ class DirectTriageClient:
             
             print(f"[{end_timestamp}] <<< {response.status_code} | {elapsed:.3f}s ({elapsed_ms:.0f}ms)")
             
-            if response.status_code == 200:
+            if response.status_code == HTTPStatus.OK:
                 try:
                     data = response.json()
                     print(f"Response: {json.dumps(data, indent=2)}")
@@ -75,7 +76,7 @@ class DirectTriageClient:
             headers=headers, json=payload, timeout=30
         )
         
-        if response and response.status_code == 200:
+        if response and response.status_code == HTTPStatus.OK:
             self.token = response.json()['access_token']
             print(f"Token obtained: {self.token[:20]}...")
             return True
@@ -94,7 +95,7 @@ class DirectTriageClient:
             headers=headers, json=payload, timeout=30
         )
         
-        if response and response.status_code == 200:
+        if response and response.status_code == HTTPStatus.OK:
             self.survey_id = response.json()['survey_id']
             print(f"Survey created: {self.survey_id}")
             return True
@@ -113,7 +114,7 @@ class DirectTriageClient:
             headers=headers, json=payload, timeout=30
         )
         
-        if response and response.status_code == 200:
+        if response and response.status_code == HTTPStatus.OK:
             data = response.json()
             state = data.get('survey_state', 'unknown')
             agent_response = data.get('assistant_message', '')
@@ -137,7 +138,7 @@ class DirectTriageClient:
             headers=headers, timeout=30
         )
         
-        if response and response.status_code == 200:
+        if response and response.status_code == HTTPStatus.OK:
             data = response.json()
             print(f"Summary obtained:")
             print(f"Urgency: {data.get('urgency', 'Unknown')}")

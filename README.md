@@ -129,3 +129,64 @@ The Voice Agent invokes the Infinitus Insurance Agent through standardized MCP t
 
 ## Contributing
 Contributions are welcome! Please open issues or pull requests to discuss improvements, bug fixes, or new agent integrations.
+
+## References
+
+### Core Documentation
+- [AGNTCY Documentation](https://docs.agntcy.org) - Open-source framework for multi-agent systems
+- [AGNTCY GitHub Repository](https://github.com/agntcy) - Source code and components
+- [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) - Protocol for structured inter-agent communication
+- [Agent-to-Agent (A2A) Messaging](https://docs.agntcy.org/a2a) - Peer-to-peer agent communication protocols
+
+### Healthcare Integration
+- [Infermedica A2A Agent Documentation](https://docs.infermedica.com/) - Medical triage API integration
+- [WebEx Proxy Documentation](https://developer.webex.com/) - WebEx integration and proxy services
+- [Healthcare Booking App Documentation](./healthcare-booking-app/README.md) - Project-specific implementation details
+- [Triage Agent Documentation](./healthcare-booking-app/triage_agent/README.md) - Medical triage implementation
+- [Insurance Agent Documentation](./healthcare-booking-app/insurance-agent/README.md) - Insurance verification workflows
+- [Voice Agent Documentation](./healthcare-booking-app/voice-agent/README.md) - Voice interaction capabilities
+
+### Observability & Monitoring
+- [OBSERVE Documentation](https://docs.observeinc.com/) - Observability and monitoring platform
+- [AGNTCY Observability Stack](https://docs.agntcy.org/observability) - Runtime monitoring and schema validation
+- [Project Observability Configuration](./healthcare-booking-app/documentation/observe/README.md) - Local observability setup
+- [Triage Agent Observability](./healthcare-booking-app/triage_agent/infermedica/agntcy/observe_config/README.md) - Agent-specific monitoring configuration
+
+### Architecture & Deployment
+- [Architecture Diagram](./system-flow-diagram.md) - System architecture overview
+- [Repository Structure](./repository-structure-diagram.md) - Project structure visualization
+- [Deployment Troubleshooting Guide](./healthcare-booking-app/documentation/README.mod) - Common deployment issues and solutions
+
+### External Resources
+- TechM Blog (coming soon) - Technical insights and implementation details
+- Voice Agent Documentation (coming soon) - Voice interaction capabilities
+- Partner Agent Documentation (coming soon) - Third-party agent integrations
+
+## Acknowledgments
+
+This project demonstrates practical applications of AI agent collaboration in healthcare customer support workflows using multi-agent systems.
+
+### Technologies & Frameworks
+- **AGNTCY Framework** - Multi-agent orchestration and discovery
+- **Infermedica Medical API** - Healthcare triage and symptom analysis
+- **WebEx Communication Platform** - Voice and messaging integration
+- **OBSERVE Monitoring Platform** - Real-time observability and metrics
+- **MCP Protocol** - Standardized agent communication
+- **Docker & Containerization** - Deployment and scaling
+- **Python & FastAPI** - Backend services and APIs
+
+### Research & Development
+This implementation serves as a reference for:
+- Multi-agent system architecture patterns
+- Healthcare workflow automation
+- Agent-to-agent communication protocols
+- Task-based access control (TBAC) implementation
+- Cross-framework agent interoperability
+
+## License
+
+This project is licensed under the GNU General Public License v3.0 - see the LICENSE file for details.
+
+## Support
+
+For technical support and questions about multi-agent systems implementation, please refer to the AGNTCY documentation or contact the development team.
