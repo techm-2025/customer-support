@@ -1,6 +1,7 @@
 import asyncio
 import json,os
 import requests
+from http import HTTPStatus
 from ioa_observe.sdk.decorators import tool
 from models.session import Session
 
@@ -86,7 +87,7 @@ JSON response:
         loop = asyncio.get_event_loop()
         response = await loop.run_in_executor(None, _request)
         
-        if response.status_code == 200:
+        if response.status_code == HTTPStatus.OK:
             data = response.json()
             if 'choices' in data and data['choices']:
                 content = data['choices'][0]['message']['content']

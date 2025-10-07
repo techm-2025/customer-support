@@ -8,6 +8,7 @@ import os
 import re
 import uuid
 from datetime import datetime
+from http import HTTPStatus
 from typing import Dict, List, Optional, Any, Union
 from dataclasses import dataclass, field
 from enum import Enum
@@ -167,7 +168,7 @@ REQUIRED JSON RESPONSE:
                 timeout=30
             )
             
-            if response.status_code == 200:
+            if response.status_code == HTTPStatus.OK:
                 response_json = response.json()
                 ai_content = response_json['choices'][0]['message']['content']
                 
@@ -232,7 +233,7 @@ REQUIRED JSON RESPONSE:
                 timeout=30
             )
             
-            if response.status_code == 200:
+            if response.status_code == HTTPStatus.OK:
                 response_json = response.json()
                 ai_content = response_json['choices'][0]['message']['content']
                 return self._parse_triage_response(ai_content)
@@ -976,7 +977,7 @@ class A2ATriageServer:
                             "message": "Invalid Request"
                         },
                         "id": data.get("id") if data else None
-                    }), 400
+                    }), HTTPStatus.BAD_REQUEST
                 
                 method = data.get("method")
                 params = data.get("params", {})
@@ -997,7 +998,7 @@ class A2ATriageServer:
                             "message": "Method not found"
                         },
                         "id": request_id
-                    }), 404
+                    }), HTTPStatus.NOT_FOUND
                 
                 # Handle errors
                 if "error" in result:
@@ -1005,7 +1006,7 @@ class A2ATriageServer:
                         "jsonrpc": "2.0",
                         "error": result["error"],
                         "id": request_id
-                    }), 400
+                    }), HTTPStatus.BAD_REQUEST
                 
                 # Success response
                 return jsonify({
@@ -1024,7 +1025,7 @@ class A2ATriageServer:
                         "data": str(e)
                     },
                     "id": request.get_json().get("id") if request.get_json() else None
-                }), 500
+                }), HTTPStatus.INTERNAL_SERVER_ERROR
         
         # Health check
         @self.app.route('/health', methods=['GET'])

@@ -9,6 +9,7 @@ import re
 import base64
 import tempfile
 from datetime import datetime
+from http import HTTPStatus
 from typing import Dict, Optional
 import uuid
 import random
@@ -251,7 +252,7 @@ class TriageClient:
         print(f"🔑 TRIAGE: Response status: {response.status_code}")
         print(f"🔑 TRIAGE: Response headers: {dict(response.headers)}")
         
-        if response.status_code == 200:
+        if response.status_code == HTTPStatus.OK:
             token_data = response.json()
             print(f"🔑 TRIAGE: Response data keys: {list(token_data.keys())}")
             token = token_data['access_token']
@@ -287,7 +288,7 @@ class TriageClient:
         
         print(f"🆕 TRIAGE: Survey response status: {response.status_code}")
         
-        if response.status_code == 200:
+        if response.status_code == HTTPStatus.OK:
             survey_data = response.json()
             print(f"🆕 TRIAGE: Survey response data: {survey_data}")
             survey_id = survey_data['survey_id']
@@ -321,7 +322,7 @@ class TriageClient:
         
         print(f"💬 TRIAGE: Message response status: {response.status_code}")
         
-        if response.status_code == 200:
+        if response.status_code == HTTPStatus.OK:
             data = response.json()
             print(f"💬 TRIAGE: Message response data: {data}")
             
@@ -357,7 +358,7 @@ class TriageClient:
         
         print(f"📋 TRIAGE: Summary response status: {response.status_code}")
         
-        if response.status_code == 200:
+        if response.status_code == HTTPStatus.OK:
             data = response.json()
             print(f"📋 TRIAGE: Summary response data: {data}")
             
@@ -470,7 +471,7 @@ class InsuranceClient:
         loop = asyncio.get_event_loop()
         response = await loop.run_in_executor(None, _request)
         
-        if response.status_code == 200:
+        if response.status_code == HTTPStatus.OK:
             data = response.json()
             if "result" in data:
                 result_text = str(data["result"])
@@ -537,7 +538,7 @@ class InsuranceClient:
         loop = asyncio.get_event_loop()
         response = await loop.run_in_executor(None, _request)
         
-        if response.status_code == 200:
+        if response.status_code == HTTPStatus.OK:
             data = response.json()
             if "result" in data:
                 result_text = str(data["result"])
@@ -629,7 +630,7 @@ Respond with JSON:
         
         print(f"🧠 LLM: Response status: {response.status_code}")
         
-        if response.status_code == 200:
+        if response.status_code == HTTPStatus.OK:
             data = response.json()
             print(f"🧠 LLM: Response data keys: {list(data.keys())}")
             

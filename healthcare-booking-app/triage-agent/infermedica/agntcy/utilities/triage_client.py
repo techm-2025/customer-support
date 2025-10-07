@@ -8,6 +8,7 @@ import json
 import requests
 import time
 from datetime import datetime
+from http import HTTPStatus
 
 def load_env():
     try:
@@ -64,7 +65,7 @@ def test_triage_api():
         response = requests.post(token_url, headers=headers, json=payload, timeout=30)
         print(f"   ← Status: {response.status_code}")
         
-        if response.status_code == 200:
+        if response.status_code == HTTPStatus.OK:
             token_data = response.json()
             token = token_data['access_token']
             print(f"   ✅ Token acquired: {token[:20]}...")
@@ -95,7 +96,7 @@ def test_triage_api():
         response = requests.post(f"{base_url}/surveys", headers=headers, json=payload, timeout=30)
         print(f"   ← Status: {response.status_code}")
         
-        if response.status_code == 200:
+        if response.status_code == HTTPStatus.OK:
             survey_data = response.json()
             survey_id = survey_data['survey_id']
             print(f"   ✅ Survey created: {survey_id}")
@@ -120,7 +121,7 @@ def test_triage_api():
                                headers=headers, json=payload, timeout=30)
         print(f"   ← Status: {response.status_code}")
         
-        if response.status_code == 200:
+        if response.status_code == HTTPStatus.OK:
             message_data = response.json()
             assistant_message = message_data.get('assistant_message', '')
             survey_state = message_data.get('survey_state', 'unknown')
@@ -160,7 +161,7 @@ def test_triage_api():
             response = requests.post(f"{base_url}/surveys/{survey_id}/messages", 
                                    headers=headers, json=payload, timeout=30)
             
-            if response.status_code == 200:
+            if response.status_code == HTTPStatus.OK:
                 message_data = response.json()
                 assistant_message = message_data.get('assistant_message', '')
                 survey_state = message_data.get('survey_state', 'unknown')
@@ -192,7 +193,7 @@ def test_triage_api():
                               headers=headers, timeout=30)
         print(f"   ← Status: {response.status_code}")
         
-        if response.status_code == 200:
+        if response.status_code == HTTPStatus.OK:
             summary_data = response.json()
             print(f"   ✅ Summary retrieved successfully")
             print(f"   ℹ️  Summary data:")
@@ -240,7 +241,7 @@ def test_token_only():
         
         response = requests.post(token_url, headers=headers, json=payload, timeout=10)
         
-        if response.status_code == 200:
+        if response.status_code == HTTPStatus.OK:
             token_data = response.json()
             token = token_data['access_token']
             print(f"✅ Token: {token[:30]}...")

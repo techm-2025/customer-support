@@ -4,6 +4,7 @@ import re
 import uuid
 import logging
 from datetime import datetime
+from http import HTTPStatus
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from ioa_observe.sdk.decorators import tool, task, workflow, agent
@@ -112,14 +113,14 @@ class A2ATriageService:
             if not auth_header:
                 logger.warning("Missing X-Shared-Key header")
                 return jsonify(self._create_error_response(
-                    None, 401, "Authorization required"
-                )), 401
+                    None, HTTPStatus.UNAUTHORIZED, "Authorization required"
+                )), HTTPStatus.UNAUTHORIZED
             
             if auth_header != self.shared_key:
                 logger.warning(f"Invalid X-Shared-Key: {auth_header[:10]}...")
                 return jsonify(self._create_error_response(
-                    None, 401, "Invalid authorization key"
-                )), 401
+                    None, HTTPStatus.UNAUTHORIZED, "Invalid authorization key"
+                )), HTTPStatus.UNAUTHORIZED
             
             return f(*args, **kwargs)
         
@@ -271,14 +272,14 @@ class A2ATriageService:
                 return jsonify(self._create_error_response(
                     None, -32603, "Internal error"
                 ))
-        @self.app.errorhandler(404)
+        @self.app.errorhandler(HTTPStatus.NOT_FOUND)
         def not_found(error):
-            return jsonify({"error": "Not found"}), 404
+            return jsonify({"error": "Not found"}), HTTPStatus.NOT_FOUND
 
-        @self.app.errorhandler(500)
+        @self.app.errorhandler(HTTPStatus.INTERNAL_SERVER_ERROR)
         def internal_error(error):
             logger.error(f"Internal server error: {error}")
-            return jsonify({"error": "Internal server error"}), 500
+            return jsonify({"error": "Internal server error"}), HTTPStatus.INTERNAL_SERVER_ERROR
 
     def _validate_jsonrpc_request(self, data):
         """Validate JSON-RPC 2.0 request format"""
