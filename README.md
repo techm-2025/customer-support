@@ -61,14 +61,19 @@ By implementing with AGNTCY standards, the system demonstrates:
 
 **AGNTCY Identity Service:**
 A centralized authentication and authorization service that manages identity verification and enforces Task-Based Access Control (TBAC) policies across all the agents in the system.
+
 **OASF Voice Agent:**
 An Open Agentic Schema Framework (OASF) voice enabled agent that processes user voice inputs, interprets healthcare requests, and coordinates with other agents to facilitate medical triaging, insurance verification and appointment scheduling.
+
 **A2A  Symptom Triage Wrapper:**
 A wrapper service that interfaces between the voice agent and the Infermedica Symptom Triage Agent, translating A2A messages and managing the symptom triage workflow.
+
 **Infinitus Insurance Agent:**
 A partner agent that handles insurance discovery and benefits eligibility verification through the MCP protocol integration with the Voice Agent.
+
 **Infermedica Symptom Triage Agent:**
 A medical AI agent that performs symptom analysis and preliminary diagnosis, accessed via REST API to provide medical triage assessment for healthcare booking.
+
 **AGNTCY Observe:**
 Observability monitoring tracks agent interactions, and provide runtime insights.
 
@@ -76,16 +81,22 @@ Observability monitoring tracks agent interactions, and provide runtime insights
 
 **1. User Interaction:**
 The user initiates a voice conversation with the OASF Voice Agent, providing healthcare-related queries like symptoms, demographics, appointment preferences etc., that trigger the healthcare booking workflow.
+
 **2. Authorize & Policy Enforcement:**
 The Voice Agent authenticates with the AGNTCY Identity service and retrives applicable TBAC policies to determine what tasks and resources the agent is authorized to access, here the A2A Symptom Triage Wrapper.
+
 **3. A2A Communication:**
 After successful TBAC authorization, the Voice Agent sends A2A messages to the A2A Symptom Triage Wrapper, enabling coordinated symptom assessment.
+
 **4. REST/HTTP API Call:**
 The A2A Symptom Triage Wrapper makes external API caclls to the Infermedica Symptom Triage Agent, sending user symptom data and receiving recommendations for appropriate care routing.
+
 **5. Authorize & Policy Enforcement:**
 The A2A Symptom Triage authenticates with the AGNTCY Identity service and retrives applicable TBAC policies to determine what tasks and resources the agent is authorized to access, here the OASF Voice Agent.
+
 **6. A2A Communication:**
 After successful TBAC authorization, the A2A Symptom Triage Wrapper sends A2A messages to the Voice Agent, enabling coordinated symptom assessment.
+
 **7. MCP Tool Call:**
 The Voice Agent invokes the Infinitus Insurance Agent through standardized MCP tool calls to verify patient insurance discovery, check benefits eligibility before scheduling appointments.
 
