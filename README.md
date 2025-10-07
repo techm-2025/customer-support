@@ -55,7 +55,7 @@ By implementing with AGNTCY standards, the system demonstrates:
 
 # Implementation Overview
 
-![arch3](https://github.com/user-attachments/assets/4905038c-3016-4aac-bef2-cd153b1c01b5)
+![arch3](https://github.com/user-attachments/assets/c63fa02d-b5ce-4380-8a4a-2d636c4c5287)
 
 - **MAS Development** → Core multi-agent architecture
 - **Agent-to-Agent (A2A) Messaging** → Coordination between agents
