@@ -6,7 +6,7 @@ import importlib
 
 load_dotenv()
 
-from tbac import TBAC
+from common.tbac import TBAC
 
 # global TBAC instance
 tbac = TBAC()
