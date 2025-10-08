@@ -3,14 +3,20 @@ import os
 import re
 import uuid
 import logging
+import sys
+from pathlib import Path
 from datetime import datetime
 from http import HTTPStatus
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from ioa_observe.sdk.decorators import tool, task, workflow, agent
-from service.task_state import TaskState
 from common.triage_client import TriageClient
 from common.tbac import TBAC
+
+app_dir = Path(__file__).resolve().parent.parent.parent.parent.parent
+common_dir = app_dir/ 'common'
+sys.path.insert(0, str(common_dir))
+from a2a_definitions import TaskState
 
 logger = logging.getLogger(__name__)
 
