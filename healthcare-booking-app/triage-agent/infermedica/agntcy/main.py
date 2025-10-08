@@ -2,9 +2,11 @@ import logging
 import argparse
 import sys
 from pathlib import Path
-from config.settings import load_env
 from service.traige_service import A2ATriageService
 from ioa_observe.sdk.instrumentations.a2a import A2AInstrumentor
+import os
+from dotenv import load_dotenv
+
 
 app_dir = Path(__file__).resolve().parent.parent.parent.parent
 common_dir = app_dir/ 'common'
@@ -29,7 +31,7 @@ def main():
     args = parser.parse_args()
     
     try:
-        load_env()
+        load_dotenv()
         initialize_observability("a2a_triage_service")
         A2AInstrumentor().instrument()
         service = A2ATriageService(
