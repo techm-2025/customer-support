@@ -11,11 +11,11 @@ Customer support is one of the highest-value domains for AI agents:
 
 ### Repository Structure
 Each folder implements a customer support MAS application for a specific vertical:
-- /healthcare-booking-app → Multi-agent system for healthcare appointment scheduling, symptom triage, and insurance queries.
+- /agentic-healthcare-booking-app → Multi-agent system for healthcare appointment scheduling, symptom triage, and insurance queries.
 
 # Healthcare Booking App
 
-The [healthcare-booking-app repository](https://github.com/techm-2025/customer-support/tree/main/healthcare-booking-app) is a reference implementation of a Healthcare Booking Multi-Agent System (MAS). It showcases how multiple AI agents can collaborate to handle appointment scheduling, symptom triage, and insurance policy management.
+The [Healthcare Booking App repository](https://github.com/techm-2025/customer-support/tree/main/agentic-healthcare-booking-app) is a reference implementation of a Healthcare Booking Multi-Agent System (MAS). It showcases how multiple AI agents can collaborate to handle appointment scheduling, symptom triage, and insurance policy management.
 
 Built with [AGNTCY components](https://github.com/agntcy) — an open-source framework, this project demonstrates practical patterns for agent-to-agent communication, orchestration, identity, and observability in a real-world vertical.
 
@@ -108,8 +108,8 @@ The Voice Agent invokes the Infinitus Insurance Agent through standardized MCP t
 
 ## Installation
 **1. Clone the repository**
-- git clone [repository-url](https://github.com/techm-2025/customer-support/tree/main/healthcare-booking-app)
-- cd healthcare-booking-app
+- git clone [repository-url](https://github.com/techm-2025/customer-support/tree/main/agentic-healthcare-booking-app)
+- cd agentic-healthcare-booking-app
 
 **2. Install dependencies**
 - pip install -r requirements.txt
@@ -141,21 +141,21 @@ Contributions are welcome! Please open issues or pull requests to discuss improv
 ### Healthcare Integration
 - [Infermedica A2A Agent Documentation](https://docs.infermedica.com/) - Medical triage API integration
 - [WebEx Proxy Documentation](https://developer.webex.com/) - WebEx integration and proxy services
-- [Healthcare Booking App Documentation](./healthcare-booking-app/README.md) - Project-specific implementation details
-- [Triage Agent Documentation](./healthcare-booking-app/triage_agent/README.md) - Medical triage implementation
-- [Insurance Agent Documentation](./healthcare-booking-app/insurance-agent/README.md) - Insurance verification workflows
-- [Voice Agent Documentation](./healthcare-booking-app/voice-agent/README.md) - Voice interaction capabilities
+- [Healthcare Booking App Documentation](./agentic-healthcare-booking-app/README.md) - Project-specific implementation details
+- [Triage Agent Documentation](./agentic-healthcare-booking-app/triage_agent/README.md) - Medical triage implementation
+- [Insurance Agent Documentation](./agentic-healthcare-booking-app/insurance-agent/README.md) - Insurance verification workflows
+- [Voice Agent Documentation](./agentic-healthcare-booking-app/voice-agent/README.md) - Voice interaction capabilities
 
 ### Observability & Monitoring
 - [OBSERVE Documentation](https://docs.observeinc.com/) - Observability and monitoring platform
 - [AGNTCY Observability Stack](https://docs.agntcy.org/observability) - Runtime monitoring and schema validation
-- [Project Observability Configuration](./healthcare-booking-app/documentation/observe/README.md) - Local observability setup
-- [Triage Agent Observability](./healthcare-booking-app/triage_agent/infermedica/agntcy/observe_config/README.md) - Agent-specific monitoring configuration
+- [Project Observability Configuration](./agentic-healthcare-booking-app/documentation/observe/README.md) - Local observability setup
+- [Triage Agent Observability](./agentic-healthcare-booking-app/triage_agent/infermedica/agntcy/observe_config/README.md) - Agent-specific monitoring configuration
 
 ### Architecture & Deployment
 - [Architecture Diagram](./system-flow-diagram.md) - System architecture overview
 - [Repository Structure](./repository-structure-diagram.md) - Project structure visualization
-- [Deployment Troubleshooting Guide](./healthcare-booking-app/documentation/README.mod) - Common deployment issues and solutions
+- [Deployment Troubleshooting Guide](./agentic-healthcare-booking-app/documentation/README.mod) - Common deployment issues and solutions
 
 ### External Resources
 - TechM Blog (coming soon) - Technical insights and implementation details
