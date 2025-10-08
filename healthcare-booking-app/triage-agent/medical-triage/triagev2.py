@@ -18,6 +18,27 @@ import requests
 import pandas as pd
 from dotenv import load_dotenv
 
+# JSON-RPC Error Codes
+class JSONRPCErrorCode(int, Enum):
+    """JSON-RPC 2.0 Error Codes as defined in the specification"""
+    PARSE_ERROR = -32700
+    INVALID_REQUEST = -32600
+    METHOD_NOT_FOUND = -32601
+    INVALID_PARAMS = -32602
+    INTERNAL_ERROR = -32603
+    TASK_NOT_FOUND = -32001
+    TASK_CANNOT_BE_CONTINUED = -32002
+
+class JSONRPCErrorDescription(str, Enum):
+    """JSON-RPC 2.0 Error Descriptions as defined in the specification"""
+    PARSE_ERROR = "Server received JSON that was not well-formed"
+    INVALID_REQUEST = "The JSON payload was valid JSON, but not a valid JSON-RPC Request object"
+    METHOD_NOT_FOUND = "The requested A2A RPC method does not exist or is not supported"
+    INVALID_PARAMS = "The params provided for the method are invalid"
+    INTERNAL_ERROR = "An unexpected error occurred on the server during processing"
+    TASK_NOT_FOUND = "Task not found"
+    TASK_CANNOT_BE_CONTINUED = "Task cannot be continued or canceled"
+
 # logging
 logging.basicConfig(
     level=logging.INFO,
@@ -488,7 +509,7 @@ class A2ATriageAgent:
             if task_id and task_id in self.tasks:
                 task = self.tasks[task_id]
                 if task.status.state in [TaskState.COMPLETED, TaskState.FAILED, TaskState.CANCELED]:
-                    return self._create_error_response(-32002, "Task cannot be restarted", task_id)
+                    return self._create_error_response(JSONRPCErrorCode.TASK_CANNOT_BE_CONTINUED, JSONRPCErrorDescription.TASK_CANNOT_BE_CONTINUED, task_id)
             else:
                 # Create new task
                 task = A2ATask()
@@ -560,7 +581,7 @@ class A2ATriageAgent:
             
         except Exception as e:
             logger.error(f"Error in message/send: {e}")
-            return self._create_error_response(-32603, f"Internal server error: {str(e)}")
+            return self._create_error_response(JSONRPCErrorCode.INTERNAL_ERROR, JSONRPCErrorDescription.INTERNAL_ERROR)
 
     async def handle_tasks_get(self, params: Dict) -> Dict:
         """Handle A2A tasks/get requests"""
@@ -569,7 +590,7 @@ class A2ATriageAgent:
             history_length = params.get("historyLength", 10)
             
             if not task_id or task_id not in self.tasks:
-                return self._create_error_response(-32001, "Task not found", task_id)
+                return self._create_error_response(JSONRPCErrorCode.TASK_NOT_FOUND, JSONRPCErrorDescription.TASK_NOT_FOUND, task_id)
             
             task = self.tasks[task_id]
             
@@ -583,7 +604,7 @@ class A2ATriageAgent:
             
         except Exception as e:
             logger.error(f"Error in tasks/get: {e}")
-            return self._create_error_response(-32603, f"Internal server error: {str(e)}")
+            return self._create_error_response(JSONRPCErrorCode.INTERNAL_ERROR, JSONRPCErrorDescription.INTERNAL_ERROR)
 
     async def handle_tasks_cancel(self, params: Dict) -> Dict:
         """Handle A2A tasks/cancel requests"""
@@ -591,12 +612,12 @@ class A2ATriageAgent:
             task_id = params.get("id")
             
             if not task_id or task_id not in self.tasks:
-                return self._create_error_response(-32001, "Task not found", task_id)
+                return self._create_error_response(JSONRPCErrorCode.TASK_NOT_FOUND, JSONRPCErrorDescription.TASK_NOT_FOUND, task_id)
             
             task = self.tasks[task_id]
             
             if task.status.state in [TaskState.COMPLETED, TaskState.FAILED, TaskState.CANCELED]:
-                return self._create_error_response(-32002, "Task cannot be canceled", task_id)
+                return self._create_error_response(JSONRPCErrorCode.TASK_CANNOT_BE_CONTINUED, JSONRPCErrorDescription.TASK_CANNOT_BE_CONTINUED, task_id)
             
             task.status.state = TaskState.CANCELED
             task.status.message = A2AMessage(
@@ -610,7 +631,7 @@ class A2ATriageAgent:
             
         except Exception as e:
             logger.error(f"Error in tasks/cancel: {e}")
-            return self._create_error_response(-32603, f"Internal server error: {str(e)}")
+            return self._create_error_response(JSONRPCErrorCode.INTERNAL_ERROR, JSONRPCErrorDescription.INTERNAL_ERROR)
 
     async def _process_triage_message(self, task: A2ATask, user_input: str) -> Dict:
         """Process triage message through enhanced workflow"""
@@ -973,8 +994,8 @@ class A2ATriageServer:
                     return jsonify({
                         "jsonrpc": "2.0",
                         "error": {
-                            "code": -32600,
-                            "message": "Invalid Request"
+                            "code": JSONRPCErrorCode.INVALID_REQUEST,
+                            "message": JSONRPCErrorDescription.INVALID_REQUEST
                         },
                         "id": data.get("id") if data else None
                     }), HTTPStatus.BAD_REQUEST
@@ -994,8 +1015,8 @@ class A2ATriageServer:
                     return jsonify({
                         "jsonrpc": "2.0",
                         "error": {
-                            "code": -32601,
-                            "message": "Method not found"
+                            "code": JSONRPCErrorCode.METHOD_NOT_FOUND,
+                            "message": JSONRPCErrorDescription.METHOD_NOT_FOUND
                         },
                         "id": request_id
                     }), HTTPStatus.NOT_FOUND
@@ -1020,8 +1041,8 @@ class A2ATriageServer:
                 return jsonify({
                     "jsonrpc": "2.0",
                     "error": {
-                        "code": -32603,
-                        "message": "Internal error",
+                        "code": JSONRPCErrorCode.INTERNAL_ERROR,
+                        "message": JSONRPCErrorDescription.INTERNAL_ERROR,
                         "data": str(e)
                     },
                     "id": request.get_json().get("id") if request.get_json() else None
