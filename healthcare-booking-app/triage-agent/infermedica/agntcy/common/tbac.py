@@ -5,7 +5,7 @@ from identityservice.sdk import IdentityServiceSdk
 
 logger = logging.getLogger(__name__)
 
-class TBACConfig:
+class TBAC:
     """TBAC configuration and authorization handler"""
     
     def __init__(self):
