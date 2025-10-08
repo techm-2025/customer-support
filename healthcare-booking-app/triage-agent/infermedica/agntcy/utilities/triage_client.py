@@ -45,7 +45,7 @@ def test_triage_api():
         print(f"   ❌ Missing environment variables: {missing}")
         return False
     
-    print(f"   ✅ App ID: {app_id[:10]}...")
+    print(f"   ✅ App ID: {app_id[:10]}...") # print first 10 characters of the App ID.
     print(f"   ✅ Instance ID: {instance_id}")
     print(f"   ✅ Token URL: {token_url}")
     print(f"   ✅ Base URL: {base_url}")
@@ -68,7 +68,7 @@ def test_triage_api():
         if response.status_code == HTTPStatus.OK:
             token_data = response.json()
             token = token_data['access_token']
-            print(f"   ✅ Token acquired: {token[:20]}...")
+            print(f"   ✅ Token acquired: {token[:20]}...") # print first 20 characters of the token
             
             # Check token expiry if available
             if 'expires_in' in token_data:
@@ -244,7 +244,7 @@ def test_token_only():
         if response.status_code == HTTPStatus.OK:
             token_data = response.json()
             token = token_data['access_token']
-            print(f"✅ Token: {token[:30]}...")
+            print(f"✅ Token: {token[:30]}...") # print first 30 characters of the token
             if 'expires_in' in token_data:
                 print(f"⏰ Expires: {token_data['expires_in']}s")
         else:

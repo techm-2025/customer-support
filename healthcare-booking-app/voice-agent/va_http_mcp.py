@@ -257,6 +257,7 @@ class TriageClient:
             print(f"🔑 TRIAGE: Response data keys: {list(token_data.keys())}")
             token = token_data['access_token']
             print(f"✅ TRIAGE: Token received: {token[:20]}...")
+            # print first 20 characters of the received token
             return token
         else:
             print(f"❌ TRIAGE: Token failed with response: {response.text}")

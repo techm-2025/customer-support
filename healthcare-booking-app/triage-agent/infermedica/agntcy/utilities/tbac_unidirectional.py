@@ -31,6 +31,7 @@ class tbac_oneway:
 
     client_token = client_sdk.access_token(agentic_service_id=os.getenv("A2A_SERVICE_ID"))
     print(f"Client token generated for access to A2a : {str(client_token)[:5]}...")
+    # print first 5 characters of the token.
 
 
 # global instance

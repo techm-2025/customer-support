@@ -118,6 +118,7 @@ class A2ATriageService:
             
             if auth_header != self.shared_key:
                 logger.warning(f"Invalid X-Shared-Key: {auth_header[:10]}...")
+                # print first 10 characters of the auth_header for logging.
                 return jsonify(self._create_error_response(
                     None, HTTPStatus.UNAUTHORIZED, "Invalid authorization key"
                 )), HTTPStatus.UNAUTHORIZED

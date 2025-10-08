@@ -18,7 +18,7 @@ class LLMClient:
     
     @tool(name="llm_tool")
     async def process(self, user_input, session):
-        print(f"LLM: Processing: '{user_input[:50]}...'")
+        print(f"LLM: Processing: '{user_input[:50]}...'") # print first 50 characters of user_input
         
         if session.in_triage_mode:
             prompt = f"""You are in TRIAGE MODE. The user is answering medical assessment questions.

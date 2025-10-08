@@ -78,7 +78,7 @@ class DirectTriageClient:
         
         if response and response.status_code == HTTPStatus.OK:
             self.token = response.json()['access_token']
-            print(f"Token obtained: {self.token[:20]}...")
+            print(f"Token obtained: {self.token[:20]}...") # print first 20 characters of the obtained token
             return True
         
         print("Failed to get token")

@@ -28,6 +28,7 @@ class TriageClient:
             
             if response.status_code != 200:
                 logger.error(f"External API error: {response.status_code} - {response.text[:300]}")
+                # print first 300 characters in the API response text for logging.
             
             return response, 0
             
