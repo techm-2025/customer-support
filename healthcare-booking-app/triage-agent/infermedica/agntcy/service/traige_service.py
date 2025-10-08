@@ -9,7 +9,7 @@ from flask_cors import CORS
 from ioa_observe.sdk.decorators import tool, task, workflow, agent
 from task_state import TaskState
 from triage_client import TriageClient
-from config.tbac_config import TBACConfig
+from config.tbac import TBAC
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ class A2ATriageService:
         self.debug = debug
         
         # Initialize TBAC
-        self.tbac = TBACConfig() if enable_tbac else None
+        self.tbac = TBAC() if enable_tbac else None
         self.enable_tbac = enable_tbac
 
         # Load shared key for authentication
