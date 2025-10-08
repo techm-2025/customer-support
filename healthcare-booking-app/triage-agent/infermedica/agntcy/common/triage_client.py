@@ -1,6 +1,7 @@
 import base64
 import logging
 import requests
+from http import HTTPStatus
 from ioa_observe.sdk.decorators import tool, task
 logger = logging.getLogger(__name__)
 
@@ -26,7 +27,7 @@ class TriageClient:
             else:
                 raise ValueError(f"Unsupported method: {method}")
             
-            if response.status_code != 200:
+            if response.status_code != HTTPStatus.OK:
                 logger.error(f"External API error: {response.status_code} - {response.text[:300]}")
             
             return response, 0
@@ -61,7 +62,7 @@ class TriageClient:
             headers=headers, json=payload, timeout=30
         )
         
-        if response.status_code == 200:
+        if response.status_code == HTTPStatus.OK:
             token = response.json()['access_token']
             return token
         
@@ -90,7 +91,7 @@ class TriageClient:
             headers=headers, json=payload, timeout=30
         )
         
-        if response.status_code == 200:
+        if response.status_code == HTTPStatus.OK:
             survey_id = response.json()['survey_id']
             return survey_id
         
@@ -116,7 +117,7 @@ class TriageClient:
             headers=headers, json=payload, timeout=30
         )
         
-        if response.status_code == 200:
+        if response.status_code == HTTPStatus.OK:
             data = response.json()
             external_state = data.get('survey_state', 'in_progress')
             agent_response = data.get('assistant_message', '')
@@ -153,7 +154,7 @@ class TriageClient:
                 headers=headers, timeout=30
             )
             
-            if response.status_code == 200:
+            if response.status_code == HTTPStatus.OK:
                 data = response.json()
                 return {
                     'success': True,
