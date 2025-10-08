@@ -3,6 +3,8 @@ import os
 import time
 import random
 import string
+import sys
+from pathlib import Path
 from ioa_observe.sdk.decorators import agent, workflow
 from ioa_observe.sdk.metrics.agents.availability import agent_availability
 from models.session import Session
@@ -10,8 +12,12 @@ from services.llm_client import LLMClient
 from services.audio_service import AudioSystem
 from services.a2a_client import A2AClient
 from services.insurance_client import InsuranceClient
-from models.task_state import TaskState
 from dotenv import load_dotenv
+
+app_dir = Path(__file__).resolve().parent.parent.parent.parent
+common_dir = app_dir/ 'common'
+sys.path.insert(0, str(common_dir))
+from a2a_definitions import TaskState
 load_dotenv()
 
 @agent(name="healthcare_agent", description="healthcare voice agent", version="1.0.0", protocol="A2A")
