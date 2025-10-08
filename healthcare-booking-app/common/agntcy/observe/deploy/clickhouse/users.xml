@@ -12,7 +12,7 @@
         </default>
         
         <admin>
-            <password>StrongPassword!</password>
+            <password>CLICKHOUSE_PASSWORD_PLACEHOLDER</password>
             <networks>
                 <ip>::/0</ip>
             </networks>
