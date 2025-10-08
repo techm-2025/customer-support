@@ -7,8 +7,9 @@ datasources:
     url: http://clickhouse:8123
     database: observability
     user: admin
+    # Password will be set during deployment
     secureJsonData:
-      password: StrongPassword!
+      password: CLICKHOUSE_PASSWORD_PLACEHOLDER
     jsonData:
       defaultDatabase: observability
       port: 8123
