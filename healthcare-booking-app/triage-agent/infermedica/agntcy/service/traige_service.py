@@ -12,12 +12,11 @@ from flask_cors import CORS
 from ioa_observe.sdk.decorators import tool, task, workflow, agent
 from common.triage_client import TriageClient
 from common.tbac import TBAC
-from service.jsonrpc_error_codes import JSONRPCErrorCode, JSONRPCErrorDescription
 
 app_dir = Path(__file__).resolve().parent.parent.parent.parent.parent
 common_dir = app_dir/ 'common'
 sys.path.insert(0, str(common_dir))
-from a2a_definitions import TaskState
+from a2a_definitions import TaskState, JSONRPCErrorCode, JSONRPCErrorDescription
 
 logger = logging.getLogger(__name__)
 
