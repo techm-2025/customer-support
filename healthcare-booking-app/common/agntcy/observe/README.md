@@ -117,9 +117,9 @@ For local development, you will typically set up the following files:
     *   **Example**:
         ```
         OTLP_HTTP_ENDPOINT=http://localhost:4318
-        SERVICE_NAME=my-healthcare-agent
-        SERVICE_VERSION=1.0.0
-        ENVIRONMENT=development
+        SERVICE_NAME=my-agent
+        SERVICE_VERSION=1
+        ENVIRONMENT=dev
         ```
 *   **`docker-compose.yml`**: Defines the services required for your local observability stack (OpenTelemetry Collector, ClickHouse, Grafana).
     *   **Purpose**: To run the observability infrastructure locally.
@@ -130,7 +130,7 @@ For local development, you will typically set up the following files:
     *   **Reference**: [https://github.com/techm-2025/customer-support/tree/main/agentic-healthcare-booking-app/common/agntcy/observe/deploy/docker-compose.yml](https://github.com/techm-2025/customer-support/tree/main/agentic-healthcare-booking-app/common/agntcy/observe/deploy/docker-compose.yml)
 *   **`otel-collector.yaml`**: Configuration for the OpenTelemetry Collector, specifying how it collects, processes, and exports traces, metrics, and logs (e.g., to ClickHouse).
     *   **Purpose**: To collect and transport telemetry data to the chosen backend.
-    *   **Reference**: [https://github.com/techm-2025/customer-support/tree/main/agentic-healthcare-booking-app/common/agntcy/observe/deploy/otel/otel-collector.yaml](https://github.com/techm-2025/customer-support/tree/main/agentic-healthcare-booking-app/common/agntcy/observe-/deploy/otel/otel-collector.yaml)
+    *   **Reference**: [https://github.com/techm-2025/customer-support/tree/main/agentic-healthcare-booking-app/common/agntcy/observe/deploy/otel/otel-collector.yaml](https://github.com/techm-2025/customer-support/tree/main/agentic-healthcare-booking-app/common/agntcy/observe/deploy/otel/otel-collector.yaml)
 
 ## Getting Started (Local Development)
 
@@ -208,8 +208,8 @@ This section outlines the steps to set up and integrate observability into your 
             TracerWrapper.set_static_params(
                 resource_attributes={
                     "service.name": service_name_actual,
-                    "service.version": os.getenv("SERVICE_VERSION", "1.0.0"),
-                    "environment": os.getenv("ENVIRONMENT", "development"),
+                    "service.version": os.getenv("SERVICE_VERSION", "1"),
+                    "environment": os.getenv("ENVIRONMENT", "dev"),
                     "system.type": "voice_agent"
                 },
                 enable_content_tracing=True,
@@ -220,8 +220,8 @@ This section outlines the steps to set up and integrate observability into your 
             LoggerWrapper.set_static_params(
                 resource_attributes={
                     "service.name": service_name_actual,
-                    "service.version": os.getenv("SERVICE_VERSION", "1.0.0"),
-                    "environment": os.getenv("ENVIRONMENT", "development")
+                    "service.version": os.getenv("SERVICE_VERSION", "1"),
+                    "environment": os.getenv("ENVIRONMENT", "dev")
                 },
                 endpoint=api_endpoint,
                 headers={}
@@ -315,7 +315,7 @@ Deploying observability components in a cloud environment, such as AWS EC2, requ
     *   **Option 2: Download Only the Deploy Directory**
         ```bash
         wget -r -np -nH --cut-dirs=3 \
-        https://github.com/repo_name/observe/deploy
+        https://github.com/techm-2025/customer-support/tree/main/agentic-healthcare-booking-app/common/agntcy/observe/deploy
         ```
 
 4.  **Configure `.env` File**:
@@ -334,7 +334,7 @@ Deploying observability components in a cloud environment, such as AWS EC2, requ
         GRAFANA_ADMIN_USER=admin
         GRAFANA_ADMIN_PASSWORD=your_secure_grafana_password # IMPORTANT: Set a strong password
 
-        DATA_PATH=/opt/observe/data # Path for persistent data storage
+        DATA_PATH=data storage path # Path for persistent data storage
         ```
     *   *Note: Ensure strong, unique passwords are set for `CLICKHOUSE_PASSWORD` and `GRAFANA_ADMIN_PASSWORD`.*
 
