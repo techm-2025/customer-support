@@ -354,3 +354,8 @@ This project is licensed under the Apache License 2.0 - see the LICENSE file for
 - **Agent Card**: `/.well-known/agent-card.json`
 - **Issues**: GitHub Issues
 - **A2A Protocol**: https://a2a-protocol.org/
+
+## References
+
+1. https://github.com/Lucanyc/TriageAgent
+2. https://github.com/souvikmajumder26/Multi-Agent-Medical-Assistant
