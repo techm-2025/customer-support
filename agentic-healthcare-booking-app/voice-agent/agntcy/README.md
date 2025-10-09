@@ -32,12 +32,8 @@ The agent follows a modular architecture with clear separation of concerns:
 ```
 voice-agent/agntcy/
 ├── main.py                          # Entry point and initialization
-├── config/
-│   ├── __init__.py
-│   └── settings.py                  # Environment configuration loader
 ├── models/
 │   ├── __init__.py
-│   ├── task_state.py                # A2A task state enumerations
 │   └── session.py                   # Session management and persistence
 ├── services/
 │   ├── __init__.py
@@ -90,7 +86,7 @@ The core observability initialization happens in the `run_agent` function in `ma
         initialize_observability(service_name)
     ```
     This call sets up the foundational observability configuration for the entire agent, typically configuring OpenTelemetry exporters and resource attributes. 
-    For observe_config refer https://github.com/techm-2025/customer-support/tree/main/healthcare-booking-app/common/agntcy/observe/observe_config.py
+    For observe_config refer https://github.com/techm-2025/customer-support/tree/main/agentic-healthcare-booking-app/common/agntcy/observe/observe_config.py
 
 *   **A2A Client Specific Initialization** (`services/a2a_client.py`):
     ```python
@@ -307,4 +303,4 @@ python main.py
 ## Support
 
 For issues or questions, please open troubleshooting documentation in the repository 
-https://github.com/techm-2025/customer-support/tree/main/healthcare-booking-app/documentation/troubleshooting
+https://github.com/techm-2025/customer-support/tree/main/agentic-healthcare-booking-app/documentation/troubleshooting

@@ -7,30 +7,23 @@ import base64
 import json
 import requests
 import time
+import sys
 from datetime import datetime
 from http import HTTPStatus
+from dotenv import load_dotenv
+load_dotenv()
+app_id = os.getenv('TRIAGE_APP_ID')
+app_key = os.getenv('TRIAGE_APP_KEY')
+instance_id = os.getenv('TRIAGE_INSTANCE_ID')
+token_url = os.getenv('TRIAGE_TOKEN_URL')
+base_url = os.getenv('TRIAGE_BASE_URL')
 
-def load_env():
-    try:
-        from dotenv import load_dotenv
-        load_dotenv()
-    except:
-        pass
 
 def test_triage_api():
     """Test complete triage API flow"""
     print("=" * 60)
     print("TRIAGE API CONNECTION TEST")
     print("=" * 60)
-    
-    # Load environment variables
-    load_env()
-    
-    app_id = os.getenv('TRIAGE_APP_ID')
-    app_key = os.getenv('TRIAGE_APP_KEY')
-    instance_id = os.getenv('TRIAGE_INSTANCE_ID')
-    token_url = os.getenv('TRIAGE_TOKEN_URL')
-    base_url = os.getenv('TRIAGE_BASE_URL')
     
     # Check configuration
     print("1. Checking configuration...")
@@ -219,13 +212,6 @@ def test_token_only():
     print("QUICK TOKEN TEST")
     print("-" * 30)
     
-    load_env()
-    
-    app_id = os.getenv('TRIAGE_APP_ID')
-    app_key = os.getenv('TRIAGE_APP_KEY')
-    instance_id = os.getenv('TRIAGE_INSTANCE_ID')
-    token_url = os.getenv('TRIAGE_TOKEN_URL')
-    
     if not all([app_id, app_key, instance_id, token_url]):
         print("❌ Missing environment variables")
         return
@@ -255,8 +241,6 @@ def test_token_only():
         print(f"❌ Exception: {e}")
 
 if __name__ == "__main__":
-    import sys
-    
     if len(sys.argv) > 1 and sys.argv[1] == "token":
         test_token_only()
     else:
