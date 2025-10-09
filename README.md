@@ -185,7 +185,8 @@ This implementation serves as a reference for:
 
 ## License
 
-This project is licensed under the GNU General Public License v3.0 - see the LICENSE file for details.
+This project is licensed under the GNU General Public License v3.0 - see the LICENSE file for details, 
+except [Medical-Triage] folder (https://github.com/techm-2025/customer-support/tree/main/agentic-healthcare-booking-app/triage-agent/medical-triage) which is licensed under APACHE 2.0 License - see [LICENSE] (https://github.com/techm-2025/customer-support/blob/main/agentic-healthcare-booking-app/triage-agent/medical-triage/LICENSE) file for details.
 
 ## Support
 
