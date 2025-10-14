@@ -43,8 +43,18 @@ Medical symptom triage system that assesses patient symptoms and provides prelim
 ### `/voice-agent`
 Voice interaction agent for patient communication via phone or voice interface.
 
-- **`agntcy/`** - Voice agent implementation
-  - `va_identity_observe.py` - Identity, observe components for voice-agent
+- **`agntcy/`** - Voice agent implementation with identity and observe
+  - **`agent/`** 
+    - `healthcare_agent.py` - voice-agent orchestrartor
+  - **`models/`** 
+    - `session.py` - session management and persistence
+  - **`services/`**
+    - `a2a_client.py` - A2A protocol client
+    - `audio_service.py` - Audio input and output service
+    - `insurance_client.py` - Insurance MCP client
+    - `llm_client.py` - LLM processing client
+  - `main.py` - voice-agent entry point and intialization
+  - `README.md` - Detailed voice agent implementation along with identity and observe
   
 - **`unit-tests/`** - Testing suite
   - `a2a_client.py` - Agent-to-agent communication test client
