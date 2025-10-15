@@ -19,23 +19,21 @@ Medical symptom triage system that assesses patient symptoms and provides prelim
 
 - **`infermedica/`** - Symptom triaging powered by Infermedica API
   - **`agntcy/`** - Identity and Observability components
-    - **`observe_config/`** - Complete observability stack configuration
-      - **`deploy/`** - deployment configurations
-        - `clickhouse/` - Time-series analytics database setup
-        - `grafana/` - Visualization dashboards and datasources
-        - `nginx/` - Reverse proxy and load balancer configs
-        - `otel/` - OpenTelemetry collector for distributed tracing
-        - `scripts/` - Deployment automation scripts (deploy, backup, update)
-        - `docker-compose.yml` - Full observability stack orchestration
-      - `observe_config.py` - Observability configuration management
-    - **`test-client/`** - Testing utilities
-      - `identity_client.py` - Identity service test client
-      - `triage_client.py` - Triage service test client
-    - `identity_observe_wrapper_service.py` - Identity wrapped A2a service with observability hooks
+    - **`common/`** -
+      - `tbac.py/` - implementation of identity on triage
+      - `triage_client/` - triage a2a client
+    - **`service/`** - 
+        - `triage_service/` - Triage a2a service
+    - **`utilities/`** - Testing utilities
+      - `tbac_bidirectional.py` - Identity service bidirectional test client
+      - `tbac_unidirectional.py` - Identity service unidirectional test client
+      - `test_api_util.py` - Triage service test client
+    - `main.py` - Identity wrapped A2a service with observability hooks
   
 - **`medical-triage/`** - Standalone triage service
-  - `triagev2.py` - Core triage logic and API endpoints
-  - `agent-card.json` - Agent metadata and capabilities manifest
+  - **`well-known/`** -
+    - `agent-card.json` - Agent metadata and capabilities manifest
+  - `medical_triage_agent.py` - Core triage logic and API endpoints
   - `Dockerfile` - Containerization configuration
   - `docker-compose.yml` - Service orchestration
   - `requirements.txt` - Python dependencies
