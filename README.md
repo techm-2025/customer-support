@@ -43,7 +43,7 @@ By implementing with AGNTCY standards, the system demonstrates:
 
 # Key Technologies
 - **AGNTCY: Internet of Agents**
-  -  Open-source framework enabling discovery, orchestration, and collaboration across agents built on different stacks.
+  - Open-source framework enabling discovery, orchestration, and collaboration across agents built on different stacks.
 - **MCP (Model Context Protocol)**
   - Protocol for structured inter-agent communication and tool calls.
 - **Agent-to-Agent (A2A) Messaging**
