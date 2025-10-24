@@ -13,10 +13,7 @@ from ioa_observe.sdk.decorators import tool, task, workflow, agent
 from common.triage_client import TriageClient
 from common.tbac import TBAC
 
-app_dir = Path(__file__).resolve().parent.parent.parent.parent.parent
-common_dir = app_dir/ 'common'
-sys.path.insert(0, str(common_dir))
-from a2a_definitions import TaskState, JSONRPCErrorCode, JSONRPCErrorDescription
+from a2a.types import TaskState, JSONRPCErrorResponse, JSONParseError, InvalidRequestError, MethodNotFoundError, InvalidParamsError, InternalError, TaskNotFoundError, TaskNotCancelableError
 
 logger = logging.getLogger(__name__)
 
@@ -83,8 +80,8 @@ class A2ATriageService:
         """Create error response for TBAC authorization failure"""
         return self._create_error_response(
             request_id, 
-            JSONRPCErrorCode.TASK_NOT_FOUND, 
-            JSONRPCErrorDescription.TASK_NOT_FOUND,
+            TaskNotFoundError, 
+            TaskNotFoundError.message,
             {"tbac_error": True, "operation": operation}
         )
     
@@ -249,7 +246,7 @@ class A2ATriageService:
                 if not self._validate_jsonrpc_request(data):
                     logger.warning(f"Invalid JSON-RPC request: {data}")
                     return jsonify(self._create_error_response(
-                        data.get('id'), JSONRPCErrorCode.INVALID_REQUEST, JSONRPCErrorDescription.INVALID_REQUEST
+                        data.get('id'), InvalidRequestError, InvalidRequestError.message
                     ))
                 
                 method = data['method']
@@ -270,13 +267,13 @@ class A2ATriageService:
                 else:
                     logger.warning(f"Unknown method: {method}")
                     return jsonify(self._create_error_response(
-                        request_id, JSONRPCErrorCode.METHOD_NOT_FOUND, JSONRPCErrorDescription.METHOD_NOT_FOUND
+                        request_id, MethodNotFoundError, MethodNotFoundError.message
                     ))
                     
             except Exception as e:
                 logger.error(f"Error handling JSON-RPC request: {e}", exc_info=True)
                 return jsonify(self._create_error_response(
-                    None, JSONRPCErrorCode.INTERNAL_ERROR, JSONRPCErrorDescription.INTERNAL_ERROR
+                    None, InternalError, InternalError.message
                 ))
         @self.app.errorhandler(HTTPStatus.NOT_FOUND)
         def not_found(error):
@@ -326,7 +323,7 @@ class A2ATriageService:
         try:
             message = params.get('message')
             if not message:
-                return self._create_error_response(request_id, JSONRPCErrorCode.INVALID_PARAMS, JSONRPCErrorDescription.INVALID_PARAMS)
+                return self._create_error_response(request_id, InvalidParamsError, InvalidParamsError.message)
             
             parts = message.get('parts', [])
             task_id = message.get('taskId')
@@ -372,7 +369,7 @@ class A2ATriageService:
             return result
         except Exception as e:
             print(f"A2A-SERVICE: Error in message/send: {e}")
-            error_response= self._create_error_response(request_id, JSONRPCErrorCode.INTERNAL_ERROR, JSONRPCErrorDescription.INTERNAL_ERROR)
+            error_response= self._create_error_response(request_id, InternalError, InternalError.message)
             return{
                 **error_response,
                 "goto":"healthcare_voice_agent",
@@ -417,7 +414,7 @@ class A2ATriageService:
         if not age or not sex:
             logger.error(f"Missing required demographics: age={age}, sex={sex}")
             return self._create_error_response(
-                request_id, JSONRPCErrorCode.INVALID_PARAMS, JSONRPCErrorDescription.INVALID_PARAMS
+                request_id, InvalidParamsError, InvalidParamsError.message
             )
         
         
@@ -453,7 +450,7 @@ class A2ATriageService:
             task['status']['state'] = TaskState.FAILED
             print(f"A2A-SERVICE: Triage start failed for task {task_id}")
             self.tasks[task_id] = task
-            error_response= self._create_error_response(request_id, JSONRPCErrorCode.INTERNAL_ERROR, JSONRPCErrorDescription.INTERNAL_ERROR)
+            error_response= self._create_error_response(request_id, InternalError, InternalError.message)
             return {
                 **error_response,
                 "goto":"healthcare_voice_agent",
@@ -470,7 +467,7 @@ class A2ATriageService:
         
         if task['status']['state'] in [TaskState.COMPLETED, TaskState.FAILED, TaskState.CANCELED]:
             print(f"A2A-SERVICE: Task {task_id} already in terminal state")
-            error_response= self._create_error_response(request_id, JSONRPCErrorCode.TASK_CANNOT_BE_CONTINUED, JSONRPCErrorDescription.TASK_CANNOT_BE_CONTINUED)
+            error_response= self._create_error_response(request_id, TaskNotCancelableError , TaskNotCancelableError.message)
             return{
                 **error_response,
                 "goto":"healthcare_voice_agent",
@@ -571,7 +568,7 @@ class A2ATriageService:
                 
         else:
             task['status']['state'] = TaskState.FAILED
-            error_response = self._create_error_response(request_id, JSONRPCErrorCode.INTERNAL_ERROR, JSONRPCErrorDescription.INTERNAL_ERROR)
+            error_response = self._create_error_response(request_id, InternalError, InternalError.message)
             return{
                     **error_response,
                     "goto":"healthcare_voice_agent",
@@ -648,7 +645,7 @@ class A2ATriageService:
         task_id = params.get('id')
         if not task_id or task_id not in self.tasks:
             logger.warning(f"Task not found: {task_id}")
-            return self._create_error_response(request_id, JSONRPCErrorCode.TASK_NOT_FOUND, JSONRPCErrorDescription.TASK_NOT_FOUND)
+            return self._create_error_response(request_id, TaskNotFoundError, TaskNotFoundError.message)
         
         task = self.tasks[task_id]
         history_length = params.get('historyLength', 10)
@@ -666,14 +663,14 @@ class A2ATriageService:
         task_id = params.get('id')
         if not task_id or task_id not in self.tasks:
             logger.warning(f"Task not found for cancellation: {task_id}")
-            return self._create_error_response(request_id, JSONRPCErrorCode.TASK_NOT_FOUND, JSONRPCErrorDescription.TASK_NOT_FOUND)
+            return self._create_error_response(request_id, TaskNotFoundError, TaskNotFoundError.message)
         
         task = self.tasks[task_id]
         
         # Check if task can be cancelled
         if task['status']['state'] in [TaskState.COMPLETED, TaskState.FAILED, TaskState.CANCELED]:
             logger.warning(f"Task {task_id} cannot be cancelled - in terminal state")
-            return self._create_error_response(request_id, JSONRPCErrorCode.TASK_CANNOT_BE_CONTINUED, JSONRPCErrorDescription.TASK_CANNOT_BE_CONTINUED)
+            return self._create_error_response(request_id, TaskNotCancelableError, TaskNotCancelableError.message)
         
         # Cancel the task
         task['status']['state'] = TaskState.CANCELED

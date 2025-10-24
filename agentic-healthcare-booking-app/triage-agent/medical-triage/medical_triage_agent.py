@@ -20,10 +20,7 @@ from dotenv import load_dotenv
 import sys
 from pathlib import Path
 
-app_dir = Path(__file__).resolve().parent.parent.parent
-common_dir = app_dir/ 'common'
-sys.path.insert(0, str(common_dir))
-from a2a_definitions import JSONRPCErrorCode, JSONRPCErrorDescription
+from a2a.types import JSONRPCErrorResponse, JSONParseError, InvalidRequestError, MethodNotFoundError, InvalidParamsError, InternalError, TaskNotFoundError, TaskNotCancelableError
 
 # logging
 logging.basicConfig(
@@ -495,7 +492,7 @@ class A2ATriageAgent:
             if task_id and task_id in self.tasks:
                 task = self.tasks[task_id]
                 if task.status.state in [TaskState.COMPLETED, TaskState.FAILED, TaskState.CANCELED]:
-                    return self._create_error_response(JSONRPCErrorCode.TASK_CANNOT_BE_CONTINUED, JSONRPCErrorDescription.TASK_CANNOT_BE_CONTINUED, task_id)
+                    return self._create_error_response(TaskNotCancelableError, TaskNotCancelableError.message, task_id)
             else:
                 # Create new task
                 task = A2ATask()
@@ -567,7 +564,7 @@ class A2ATriageAgent:
             
         except Exception as e:
             logger.error(f"Error in message/send: {e}")
-            return self._create_error_response(JSONRPCErrorCode.INTERNAL_ERROR, JSONRPCErrorDescription.INTERNAL_ERROR)
+            return self._create_error_response(InternalError, InternalError.message)
 
     async def handle_tasks_get(self, params: Dict) -> Dict:
         """Handle A2A tasks/get requests"""
@@ -576,7 +573,7 @@ class A2ATriageAgent:
             history_length = params.get("historyLength", 10)
             
             if not task_id or task_id not in self.tasks:
-                return self._create_error_response(JSONRPCErrorCode.TASK_NOT_FOUND, JSONRPCErrorDescription.TASK_NOT_FOUND, task_id)
+                return self._create_error_response(TaskNotFoundError, TaskNotFoundError.message, task_id)
             
             task = self.tasks[task_id]
             
@@ -590,7 +587,7 @@ class A2ATriageAgent:
             
         except Exception as e:
             logger.error(f"Error in tasks/get: {e}")
-            return self._create_error_response(JSONRPCErrorCode.INTERNAL_ERROR, JSONRPCErrorDescription.INTERNAL_ERROR)
+            return self._create_error_response(InternalError, InternalError.message)
 
     async def handle_tasks_cancel(self, params: Dict) -> Dict:
         """Handle A2A tasks/cancel requests"""
@@ -598,12 +595,12 @@ class A2ATriageAgent:
             task_id = params.get("id")
             
             if not task_id or task_id not in self.tasks:
-                return self._create_error_response(JSONRPCErrorCode.TASK_NOT_FOUND, JSONRPCErrorDescription.TASK_NOT_FOUND, task_id)
+                return self._create_error_response(TaskNotFoundError, TaskNotFoundError.message, task_id)
             
             task = self.tasks[task_id]
             
             if task.status.state in [TaskState.COMPLETED, TaskState.FAILED, TaskState.CANCELED]:
-                return self._create_error_response(JSONRPCErrorCode.TASK_CANNOT_BE_CONTINUED, JSONRPCErrorDescription.TASK_CANNOT_BE_CONTINUED, task_id)
+                return self._create_error_response(TaskNotCancelableError, TaskNotCancelableError.message, task_id)
             
             task.status.state = TaskState.CANCELED
             task.status.message = A2AMessage(
@@ -617,7 +614,7 @@ class A2ATriageAgent:
             
         except Exception as e:
             logger.error(f"Error in tasks/cancel: {e}")
-            return self._create_error_response(JSONRPCErrorCode.INTERNAL_ERROR, JSONRPCErrorDescription.INTERNAL_ERROR)
+            return self._create_error_response(InternalError, InternalError.message)
 
     async def _process_triage_message(self, task: A2ATask, user_input: str) -> Dict:
         """Process triage message through enhanced workflow"""
@@ -980,8 +977,8 @@ class A2ATriageServer:
                     return jsonify({
                         "jsonrpc": "2.0",
                         "error": {
-                            "code": JSONRPCErrorCode.INVALID_REQUEST,
-                            "message": JSONRPCErrorDescription.INVALID_REQUEST
+                            "code": InvalidRequestError,
+                            "message": InvalidRequestError.message
                         },
                         "id": data.get("id") if data else None
                     }), HTTPStatus.BAD_REQUEST
@@ -1001,8 +998,8 @@ class A2ATriageServer:
                     return jsonify({
                         "jsonrpc": "2.0",
                         "error": {
-                            "code": JSONRPCErrorCode.METHOD_NOT_FOUND,
-                            "message": JSONRPCErrorDescription.METHOD_NOT_FOUND
+                            "code": MethodNotFoundError,
+                            "message": MethodNotFoundError
                         },
                         "id": request_id
                     }), HTTPStatus.NOT_FOUND
@@ -1027,8 +1024,8 @@ class A2ATriageServer:
                 return jsonify({
                     "jsonrpc": "2.0",
                     "error": {
-                        "code": JSONRPCErrorCode.INTERNAL_ERROR,
-                        "message": JSONRPCErrorDescription.INTERNAL_ERROR,
+                        "code": InternalError,
+                        "message": InternalError.message,
                         "data": str(e)
                     },
                     "id": request.get_json().get("id") if request.get_json() else None
