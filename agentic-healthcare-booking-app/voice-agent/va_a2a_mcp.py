@@ -17,6 +17,8 @@ from enum import Enum
 
 import requests
 
+from a2a.types import TaskState
+
 # Audio imports with fallback
 try:
     import speech_recognition as sr
@@ -35,18 +37,6 @@ def load_env():
         pass
 
 load_env()
-
-# Task States per A2A spec
-class TaskState(str, Enum):
-    SUBMITTED = "submitted"
-    WORKING = "working"
-    INPUT_REQUIRED = "input-required"
-    COMPLETED = "completed"
-    CANCELED = "canceled"
-    FAILED = "failed"
-    REJECTED = "rejected"
-    AUTH_REQUIRED = "auth-required"
-    UNKNOWN = "unknown"
 
 # Session Management
 class Session:
