@@ -2,7 +2,7 @@ import logging
 import argparse
 import sys
 from pathlib import Path
-from service.traige_service import A2ATriageService
+from service.triage_service import A2ATriageService
 from ioa_observe.sdk.instrumentations.a2a import A2AInstrumentor
 import os
 from dotenv import load_dotenv

@@ -19,12 +19,14 @@ import requests
 
 from a2a.types import TaskState
 
+# if need default chat mode - set this flag to False.
+AUDIO_AVAILABLE = True
+
 # Audio imports with fallback
 try:
     import speech_recognition as sr
     import pygame
     from gtts import gTTS
-    AUDIO_AVAILABLE = True
 except ImportError:
     AUDIO_AVAILABLE = False
 
@@ -803,7 +805,7 @@ class HealthcareAgent:
             task_state = result['status']['state']
             print(f"TRIAGE: A2A task state: {task_state}")
             
-            if task_state == TaskState.COMPLETED:
+            if task_state == TaskState.completed:
                 print("TRIAGE: Assessment COMPLETED - exiting A2A mode")
                 
                 if result.get('artifacts'):
@@ -825,7 +827,7 @@ class HealthcareAgent:
                 
                 return
                 
-            elif task_state == TaskState.INPUT_REQUIRED:
+            elif task_state == TaskState.input_required:
                 if result['status'].get('message'):
                     next_question = self._extract_text_from_message(result['status']['message'])
                     if next_question:
@@ -835,7 +837,7 @@ class HealthcareAgent:
                     print("TRIAGE: No message in input-required state - ending triage")
                     await self._end_triage_mode("Let me help you continue with scheduling your appointment.")
                 
-            elif task_state in [TaskState.FAILED, TaskState.CANCELED]:
+            elif task_state in [TaskState.failed, TaskState.canceled]:
                 print(f"TRIAGE: Task ended with state: {task_state}")
                 await self._end_triage_mode("Let me help you continue with scheduling your appointment.")
                 
