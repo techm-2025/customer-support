@@ -90,7 +90,3 @@ Agents communicate with each other, enabling:
 - Standardized HTTP-based APIs
 - Identity management and authentication
 - Distributed tracing across agent boundaries
-
-## 📝 License
-
-This project is licensed under the [GNU General Public License v3.0](../LICENSE).
