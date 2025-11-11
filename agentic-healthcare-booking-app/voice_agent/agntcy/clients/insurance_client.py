@@ -1,17 +1,23 @@
+"""
+Insurance/MCP Client for discovery and eligibility checks
+"""
 import asyncio
 import re
 import requests
-from http import HTTPStatus
-from ioa_observe.sdk.decorators import tool
 from datetime import datetime
+from ioa_observe.sdk.decorators import tool
+
 
 class InsuranceClient:
+    """Client for insurance discovery and eligibility verification via MCP"""
+    
     def __init__(self, mcp_url, api_key):
         self.mcp_url = mcp_url
         self.headers = {"Content-Type": "application/json", "X-INF-API-KEY": api_key}
         print("INSURANCE: Client initialized")
     
     def _split_name(self, name):
+        """Split full name into first and last"""
         parts = name.strip().split()
         if len(parts) == 1:
             return parts[0], ""
@@ -21,14 +27,16 @@ class InsuranceClient:
             return parts[0], " ".join(parts[1:])
     
     def _format_dob(self, dob):
+        """Format date of birth to YYYY-MM-DD"""
         if not dob:
             return ""
         
+        # Handle MM/DD/YYYY format
         if re.match(r'^\d{1,2}/\d{1,2}/\d{4}$', dob):
             month, day, year = dob.split('/')
-            formatted = f"{year}-{month.zfill(2)}-{day.zfill(2)}"
-            return formatted
+            return f"{year}-{month.zfill(2)}-{day.zfill(2)}"
         
+        # Already in YYYY-MM-DD format
         if re.match(r'^\d{4}-\d{1,2}-\d{1,2}$', dob):
             return dob
         
@@ -36,7 +44,9 @@ class InsuranceClient:
     
     @tool(name="insurance_discovery_tool")
     async def discovery(self, name, dob, state):
+        """Discover insurance information for a patient"""
         print(f"INSURANCE: Discovery - {name}, {dob}, {state}")
+        
         first, last = self._split_name(name)
         formatted_dob = self._format_dob(dob)
         formatted_state = state.strip().title() if state else ""
@@ -62,37 +72,44 @@ class InsuranceClient:
         loop = asyncio.get_event_loop()
         response = await loop.run_in_executor(None, _request)
         
-        if response.status_code == HTTPStatus.OK:
+        if response.status_code == 200:
             data = response.json()
             
             if "result" in data:
                 result_text = str(data["result"])
                 
+                # Extract payer name
                 payer = ""
-                member_id = ""
-                
                 for pattern in [r'payer[:\s]*([^\n,;]+)', r'insurance[:\s]*([^\n,;]+)', r'plan[:\s]*([^\n,;]+)']:
                     match = re.search(pattern, result_text.lower())
                     if match:
                         payer = match.group(1).strip().title()
                         break
                 
-                for pattern in [r'member\s*id[:\s]*([a-za-z0-9\-]+)', r'subscriber\s*id[:\s]*([a-za-z0-9\-]+)', r'policy\s*id[:\s]*([a-za-z0-9\-]+)', r'policy[:\s]*([a-za-z0-9\-]+)']:
+                # Extract member ID
+                member_id = ""
+                for pattern in [r'member\s*id[:\s]*([a-za-z0-9\-]+)', r'subscriber\s*id[:\s]*([a-za-z0-9\-]+)', 
+                               r'policy\s*id[:\s]*([a-za-z0-9\-]+)', r'policy[:\s]*([a-za-z0-9\-]+)']:
                     match = re.search(pattern, result_text.lower())
                     if match:
                         member_id = match.group(1).strip().upper()
                         break
                 
+                print(f"INSURANCE: Discovery success - Payer: {payer}, Member ID: {member_id}")
                 return {"success": True, "payer": payer, "member_id": member_id}
         
+        print("INSURANCE: Discovery failed")
         return {"success": False}
     
     @tool(name="insurance_eligibility_tool")
     async def eligibility(self, name, dob, subscriber_id, payer_name, provider_name):
-        print(f"INSURANCE: Eligibility check")
+        """Check insurance eligibility and benefits"""
+        print(f"INSURANCE: Eligibility check for {name}")
+        
         first, last = self._split_name(name)
         formatted_dob = self._format_dob(dob)
         
+        # Clean provider name
         provider_clean = re.sub(r'\b(Dr\.?|MD|DO)\b', '', provider_name, flags=re.IGNORECASE).strip()
         provider_first, provider_last = self._split_name(provider_clean)
         
@@ -110,7 +127,7 @@ class InsuranceClient:
                     "payerName": payer_name,
                     "providerFirstName": provider_first,
                     "providerLastName": provider_last,
-                    "providerNpi": "1234567890"
+                    "providerNpi": "1234567890"  # Default NPI
                 }
             }
         }
@@ -121,14 +138,19 @@ class InsuranceClient:
         loop = asyncio.get_event_loop()
         response = await loop.run_in_executor(None, _request)
         
-        if response.status_code == HTTPStatus.OK:
+        if response.status_code == 200:
             data = response.json()
             
             if "result" in data:
                 result_text = str(data["result"])
                 
+                # Extract copay amount
                 copay = ""
-                copay_patterns = [r'co-?pay[:\s]*\$?([0-9,]+)', r'copayment[:\s]*\$?([0-9,]+)', r'patient\s+responsibility[:\s]*\$?([0-9,]+)']
+                copay_patterns = [
+                    r'co-?pay[:\s]*\$?([0-9,]+)',
+                    r'copayment[:\s]*\$?([0-9,]+)',
+                    r'patient\s+responsibility[:\s]*\$?([0-9,]+)'
+                ]
                 
                 for pattern in copay_patterns:
                     copay_match = re.search(pattern, result_text.lower())
@@ -136,6 +158,8 @@ class InsuranceClient:
                         copay = copay_match.group(1)
                         break
                 
+                print(f"INSURANCE: Eligibility success - Copay: ${copay}")
                 return {"success": True, "copay": copay}
         
+        print("INSURANCE: Eligibility check failed")
         return {"success": False}

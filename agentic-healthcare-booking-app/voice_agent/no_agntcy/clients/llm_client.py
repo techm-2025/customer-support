@@ -1,27 +1,36 @@
+"""
+LLM client for conversation processing
+"""
 import asyncio
-import json,os
+import json
+from typing import Dict, Any
+
 import requests
-from http import HTTPStatus
-from ioa_observe.sdk.decorators import tool
-from models.session import Session
+
+from config.settings import LLMConfig
+
 
 class LLMClient:
-    def __init__(self, jwt_token, endpoint_url, project_id, connection_id):
+    """Client for LLM API interactions"""
+    
+    def __init__(self, config: LLMConfig):
+        self.config = config
         self.headers = {
             'Content-Type': 'application/json',
-            'Authorization': f'Bearer {jwt_token}'
+            'Authorization': f'Bearer {config.jwt_token}'
         }
-        self.endpoint_url = endpoint_url
-        self.project_id = project_id
-        self.connection_id = connection_id
         print("LLM: Initialized with JWT endpoint")
     
-    @tool(name="llm_tool")
-    async def process(self, user_input, session):
-        print(f"LLM: Processing: '{user_input[:50]}...'")
-        
+    def _build_prompt(self, user_input: str, session) -> str:
+        """Build appropriate prompt based on session state"""
         if session.in_triage_mode:
-            prompt = f"""You are in TRIAGE MODE. The user is answering medical assessment questions.
+            return self._build_triage_prompt(user_input, session)
+        else:
+            return self._build_appointment_prompt(user_input, session)
+    
+    def _build_triage_prompt(self, user_input: str, session) -> str:
+        """Build prompt for triage mode"""
+        return f"""You are in TRIAGE MODE. The user is answering medical assessment questions.
 
 Current triage task: {session.triage_task_id}
 User response to triage question: "{user_input}"
@@ -36,8 +45,10 @@ Respond with:
     "done": false,
     "continue_triage": true
 }}"""
-        else:
-            prompt = f"""You are a healthcare appointment scheduler with this specific flow:
+    
+    def _build_appointment_prompt(self, user_input: str, session) -> str:
+        """Build prompt for appointment scheduling"""
+        return f"""You are a healthcare appointment scheduler with this specific flow:
 
 1. Ask name, phone
 2. Ask reason for visit
@@ -69,30 +80,51 @@ JSON response:
     "call_eligibility": true/false,
     "done": true/false
 }}"""
+    
+    async def process(self, user_input: str, session) -> Dict[str, Any]:
+        """
+        Process user input through LLM
+        
+        Args:
+            user_input: User's message
+            session: Current session object
+            
+        Returns:
+            Parsed LLM response as dictionary
+        """
+        print(f"LLM: Processing: '{user_input[:50]}...'")
+        
+        prompt = self._build_prompt(user_input, session)
         
         payload = {
             "messages": [
                 {"role": "system", "content": prompt},
                 {"role": "user", "content": user_input}
             ],
-            "project_id": self.project_id,
-            "connection_id": self.connection_id,
+            "project_id": self.config.project_id,
+            "connection_id": self.config.connection_id,
             "max_tokens": 400,
             "temperature": 0.2
         }
         
         def _request():
-            return requests.post(self.endpoint_url, headers=self.headers, json=payload, timeout=30)
+            return requests.post(
+                self.config.endpoint_url,
+                headers=self.headers,
+                json=payload,
+                timeout=30
+            )
         
         loop = asyncio.get_event_loop()
         response = await loop.run_in_executor(None, _request)
         
-        if response.status_code == HTTPStatus.OK:
+        if response.status_code == 200:
             data = response.json()
             if 'choices' in data and data['choices']:
                 content = data['choices'][0]['message']['content']
                 
                 try:
+                    # Clean JSON formatting
                     if content.startswith('```json'):
                         content = content[7:]
                     if content.endswith('```'):
@@ -101,9 +133,10 @@ JSON response:
                     result = json.loads(content.strip())
                     print("LLM: Response parsed")
                     return result
-                except:
-                    pass
+                except Exception as e:
+                    print(f"LLM: Parse error: {e}")
         
+        # Fallback response
         return {
             "response": "I understand. Please continue.",
             "extract": {},

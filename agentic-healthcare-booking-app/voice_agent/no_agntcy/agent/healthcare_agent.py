@@ -1,88 +1,63 @@
 """
-Healthcare Voice Agent
+Main healthcare agent orchestration
 """
-import time
 import random
 import string
-from ioa_observe.sdk.decorators import agent, workflow
-from ioa_observe.sdk.metrics.agents.availability import agent_availability
-from config.settings import Settings
+from typing import Optional
+
+from audio.audio import AudioSystem
 from clients.a2a_client import A2AClient
 from clients.llm_client import LLMClient
 from clients.insurance_client import InsuranceClient
-from audio.audio import AudioSystem
+from config.settings import Settings
 from session.session import Session
 from a2a.types import TaskState
 
 
-@agent(name="healthcare_agent", description="healthcare voice agent", version="1.0.0", protocol="A2A")
 class HealthcareAgent:
-    """Main healthcare appointment scheduling agent"""
+    """Main healthcare appointment agent with voice, triage, and insurance"""
     
-    def __init__(self):
-        settings = Settings()
-        
-        self.session = Session(session_dir=settings.session_dir)
+    def __init__(self, settings: Settings):
+        self.session = Session()
         self.audio = AudioSystem()
         
-        # Initialize LLM client
-        self.llm = LLMClient(
-            settings.jwt_token,
-            settings.endpoint_url,
-            settings.project_id,
-            settings.connection_id
-        )
-        
-        # Initialize insurance client
-        self.insurance = InsuranceClient(settings.mcp_url, settings.insurance_api_key)
+        # Initialize clients
+        self.llm = LLMClient(settings.llm)
+        self.insurance = InsuranceClient(settings.insurance)
         
         # Initialize A2A client
-        self.a2a_client = None
+        self.a2a_client: Optional[A2AClient] = None
         try:
-            self.a2a_client = A2AClient(
-                settings.a2a_service_url,
-                settings.a2a_message_url,
-                settings.a2a_api_key,
-                settings.otlp_endpoint
-            )
+            self.a2a_client = A2AClient(settings.a2a)
         except Exception as e:
             print(f"A2A client initialization failed: {e}")
-        
-        self.max_turns = settings.max_turns
-        self.max_errors = settings.max_errors
     
     async def start(self):
-        """Start the agent conversation"""
-        print(f"\n{'='*60}")
-        print(f"Healthcare Agent Starting - Session {self.session.id}")
-        print(f"{'='*60}\n")
-        
-        # Record agent heartbeat
-        start = time.time()
-        agent_availability.record_agent_heartbeat("healthcare_voice_agent")
-        observe_latency = time.time() - start
-        print(f"✓ Observe heartbeat latency: {observe_latency:.2f}s\n")
+        """Start the healthcare agent conversation"""
+        print(f"Healthcare Agent starting - Session {self.session.id}")
         
         # Discover A2A agent if available
         if self.a2a_client:
             await self.a2a_client.discover_agent()
         
         # Initial greeting
-        initial_message = "Hello! I'm your healthcare appointment assistant. Let's start by getting your basic information. What's your full name?"
+        initial_message = (
+            "Hello! I'm your healthcare appointment assistant. "
+            "Let's start by getting your basic information. "
+            "What's your full name?"
+        )
         await self.audio.speak(initial_message)
         self.session.add_interaction("assistant", initial_message)
         
         # Main conversation loop
         turn = 0
         errors = 0
+        max_turns = 50
+        max_errors = 3
         
-        while turn < self.max_turns and errors < self.max_errors:
+        while turn < max_turns and errors < max_errors:
             turn += 1
-            print(f"\n--- Turn {turn} ---")
-            
-            # Periodic heartbeat
-            if turn % 5 == 0:
-                agent_availability.record_agent_heartbeat("healthcare_voice_agent")
+            print(f"--- Turn {turn} ---")
             
             # Listen for user input
             user_input = await self.audio.listen(timeout=5)
@@ -90,15 +65,15 @@ class HealthcareAgent:
             # Handle audio errors
             if user_input in ["UNCLEAR", "TIMEOUT", "ERROR"]:
                 errors += 1
-                agent_availability.record_agent_activity("healthcare_voice_agent", success=False)
-                
                 if user_input == "TIMEOUT":
-                    await self.audio.speak("I'm still here. What would you like me to help you with?")
+                    await self.audio.speak(
+                        "I'm still here. What would you like me to help you with?"
+                    )
                 else:
-                    await self.audio.speak("I didn't catch that clearly. Could you please repeat?")
+                    await self.audio.speak(
+                        "I didn't catch that clearly. Could you please repeat?"
+                    )
                 continue
-            
-            agent_availability.record_agent_activity("healthcare_voice_agent", success=True)
             
             if not user_input:
                 continue
@@ -113,48 +88,45 @@ class HealthcareAgent:
                 self.session.add_interaction("assistant", "Thank you for calling. Have a great day!")
                 break
             
-            # Handle conversation based on mode
+            # Handle triage or regular conversation
             if self.session.in_triage_mode:
                 await self._handle_triage_conversation(user_input)
             else:
-                await self._handle_appointment_flow(user_input)
+                await self._handle_regular_conversation(user_input)
         
         # End of conversation
-        print(f"\n{'='*60}")
         print(f"Conversation ended. Final data: {self.session.data}")
-        print(f"{'='*60}\n")
         
-        # Save session
         saved_file = self.session.save_to_file()
         if saved_file:
-            print(f"✓ Session saved to: {saved_file}")
+            print(f"Session saved to: {saved_file}")
     
-    async def _handle_appointment_flow(self, user_input):
-        """Handle normal appointment scheduling flow"""
+    async def _handle_regular_conversation(self, user_input: str):
+        """Handle regular appointment scheduling conversation"""
+        # Process through LLM
         result = await self.llm.process(user_input, self.session)
         
-        # Extract data fields
+        # Extract and update session data
         if result.get("extract"):
-            for key, value in result["extract"].items():
-                if value:
-                    self.session.data[key] = value
-                    print(f"SESSION-UPDATE: Set {key} = {value}")
+            self.session.update_multiple(result["extract"])
         
-        # Start triage if needed
-        if (result.get("need_triage") and not self.session.triage_complete and 
-            self.session.triage_attempts < 1 and self.a2a_client):
+        # Check if triage is needed
+        if (result.get("need_triage") and 
+            not self.session.triage_complete and 
+            self.session.triage_attempts < 1 and 
+            self.a2a_client):
             
             print("TRIAGE: Starting integrated triage conversation")
             await self._start_integrated_triage()
             return
         
-        # Call insurance discovery
+        # Call insurance discovery if needed
         if result.get("call_discovery"):
             await self._handle_insurance_discovery()
         
-        # Call insurance eligibility
+        # Call eligibility check if needed
         if result.get("call_eligibility"):
-            await self._handle_insurance_eligibility()
+            await self._handle_eligibility_check()
         
         # Speak response
         response = result.get("response", "")
@@ -162,81 +134,112 @@ class HealthcareAgent:
             await self.audio.speak(response)
             self.session.add_interaction("assistant", response)
         
-        # Complete appointment
+        # Check if done
         if result.get("done"):
             confirmation = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
-            final_message = f"Excellent! Your appointment is confirmed. Confirmation number: {confirmation}. You'll receive an email confirmation shortly. Thank you for calling!"
+            final_message = (
+                f"Excellent! Your appointment is confirmed. "
+                f"Confirmation number: {confirmation}. "
+                f"You'll receive an email confirmation shortly. "
+                f"Thank you for calling!"
+            )
             await self.audio.speak(final_message)
             self.session.add_interaction("assistant", final_message)
     
     async def _handle_insurance_discovery(self):
-        """Handle insurance discovery API call"""
+        """Call insurance discovery API"""
         required = ['name', 'date_of_birth', 'state']
-        if all(k in self.session.data and self.session.data[k] for k in required):
-            print("INSURANCE-DISCOVERY: Calling API...")
-            discovery = await self.insurance.discovery(
-                self.session.data['name'],
-                self.session.data['date_of_birth'],
-                self.session.data['state']
+        if not self.session.has_required_fields(required):
+            return
+        
+        print("INSURANCE-DISCOVERY: Calling API...")
+        discovery = await self.insurance.discovery(
+            self.session.data['name'],
+            self.session.data['date_of_birth'],
+            self.session.data['state']
+        )
+        
+        if discovery["success"]:
+            self.session.update_data('payer', discovery['payer'])
+            self.session.update_data('member_id', discovery['member_id'])
+            
+            message = (
+                f"Great! I found your insurance: {discovery['payer']}, "
+                f"Policy ID: {discovery['member_id']}."
             )
-            if discovery["success"]:
-                self.session.data['payer'] = discovery['payer']
-                self.session.data['member_id'] = discovery['member_id']
-                
-                insurance_message = f"Great! I found your insurance: {discovery['payer']}, Policy ID: {discovery['member_id']}."
-                await self.audio.speak(insurance_message)
-                self.session.add_interaction("assistant", insurance_message)
-            else:
-                fallback_msg = "I had some trouble finding your insurance, but we can proceed."
-                await self.audio.speak(fallback_msg)
-                self.session.add_interaction("assistant", fallback_msg)
+            await self.audio.speak(message)
+            self.session.add_interaction("assistant", message)
+        else:
+            fallback_msg = "I had some trouble finding your insurance, but we can proceed."
+            await self.audio.speak(fallback_msg)
+            self.session.add_interaction("assistant", fallback_msg)
     
-    async def _handle_insurance_eligibility(self):
-        """Handle insurance eligibility API call"""
+    async def _handle_eligibility_check(self):
+        """Call insurance eligibility API"""
         required = ['name', 'date_of_birth', 'member_id', 'payer', 'provider_name']
-        if all(k in self.session.data and self.session.data[k] for k in required):
-            print("INSURANCE-ELIGIBILITY: Calling API...")
-            eligibility = await self.insurance.eligibility(
-                self.session.data['name'],
-                self.session.data['date_of_birth'],
-                self.session.data['member_id'],
-                self.session.data['payer'],
-                self.session.data['provider_name']
+        if not self.session.has_required_fields(required):
+            return
+        
+        print("INSURANCE-ELIGIBILITY: Calling API...")
+        eligibility = await self.insurance.eligibility(
+            self.session.data['name'],
+            self.session.data['date_of_birth'],
+            self.session.data['member_id'],
+            self.session.data['payer'],
+            self.session.data['provider_name']
+        )
+        
+        if eligibility["success"] and eligibility.get('copay'):
+            message = (
+                f"Perfect! Your insurance is verified. "
+                f"Payer: {self.session.data['payer']}, "
+                f"Policy ID: {self.session.data['member_id']}, "
+                f"Your copay will be ${eligibility['copay']}."
             )
-            if eligibility["success"] and eligibility.get('copay'):
-                eligibility_message = f"Perfect! Your insurance is verified. Payer: {self.session.data['payer']}, Policy ID: {self.session.data['member_id']}, Your copay will be ${eligibility['copay']}."
-                await self.audio.speak(eligibility_message)
-                self.session.add_interaction("assistant", eligibility_message)
-            else:
-                fallback_message = f"Your insurance {self.session.data['payer']} with Policy ID {self.session.data['member_id']} is on file. We can proceed with scheduling."
-                await self.audio.speak(fallback_message)
-                self.session.add_interaction("assistant", fallback_message)
+            await self.audio.speak(message)
+            self.session.add_interaction("assistant", message)
+        else:
+            fallback_message = (
+                f"Your insurance {self.session.data['payer']} "
+                f"with Policy ID {self.session.data['member_id']} is on file. "
+                f"We can proceed with scheduling."
+            )
+            await self.audio.speak(fallback_message)
+            self.session.add_interaction("assistant", fallback_message)
     
-    @workflow(name="integrated_triage_workflow")
     async def _start_integrated_triage(self):
-        """Start integrated triage conversation with A2A service"""
+        """Start integrated triage conversation via A2A"""
         self.session.triage_attempts += 1
         self.session.in_triage_mode = True
         
         print("TRIAGE: Starting integrated triage conversation")
         
-        triage_intro = "I need to do a quick medical assessment to better assist you. Let me ask you a few health-related questions."
+        triage_intro = (
+            "I need to do a quick medical assessment to better assist you. "
+            "Let me ask you a few health-related questions."
+        )
         
         try:
             await self.audio.speak(triage_intro)
             self.session.add_interaction("assistant", triage_intro)
             
-            # Default demographics for triage
+            # Use default demographics for triage
             age = 33
             sex = "female"
             complaint = self.session.data.get('reason', 'general health concern')
             
-            message_parts = [{"kind": "text", "text": f"I am {age} years old, {sex}. {complaint}"}]
+            message_parts = [{
+                "kind": "text",
+                "text": f"I am {age} years old, {sex}. {complaint}"
+            }]
+            
             result = await self.a2a_client.send_message(message_parts)
             
             if not result:
                 print("TRIAGE: Failed to start - falling back to normal flow")
-                await self._end_triage_mode("I'll help you schedule your appointment without the assessment.")
+                await self._end_triage_mode(
+                    "I'll help you schedule your appointment without the assessment."
+                )
                 return
             
             if result.get('kind') == 'task':
@@ -245,8 +248,11 @@ class HealthcareAgent:
                 
                 print(f"TRIAGE: Started task {self.session.triage_task_id}")
                 
+                # Speak first triage question
                 if result['status'].get('message'):
-                    triage_question = self._extract_text_from_message(result['status']['message'])
+                    triage_question = self._extract_text_from_message(
+                        result['status']['message']
+                    )
                     if triage_question:
                         await self.audio.speak(triage_question)
                         self.session.add_interaction("assistant", triage_question)
@@ -255,9 +261,8 @@ class HealthcareAgent:
             print(f"TRIAGE: Error starting: {e}")
             await self._end_triage_mode("Let me help you schedule your appointment.")
     
-    @workflow(name="triage_conversational_flow")
-    async def _handle_triage_conversation(self, user_input):
-        """Handle multi-turn triage conversation"""
+    async def _handle_triage_conversation(self, user_input: str):
+        """Handle ongoing triage conversation"""
         print(f"TRIAGE: User response: {user_input}")
         
         try:
@@ -270,14 +275,16 @@ class HealthcareAgent:
             
             if not result:
                 print("TRIAGE: Failed to continue - ending triage")
-                await self._end_triage_mode("Let me help you continue with scheduling your appointment.")
+                await self._end_triage_mode(
+                    "Let me help you continue with scheduling your appointment."
+                )
                 return
             
             task_state = result['status']['state']
             print(f"TRIAGE: A2A task state: {task_state}")
             
             if task_state == TaskState.completed:
-                print("TRIAGE: Assessment COMPLETED")
+                print("TRIAGE: Assessment COMPLETED - exiting A2A mode")
                 
                 # Extract triage results
                 if result.get('artifacts'):
@@ -287,47 +294,65 @@ class HealthcareAgent:
                         self.session.triage_results.update(triage_data)
                         print(f"TRIAGE: Results extracted: {triage_data}")
                 
+                # Build completion message
                 urgency = self.session.triage_results.get('urgency_level', 'standard')
                 doctor_type = self.session.triage_results.get('doctor_type', 'general practitioner')
                 
-                completion_message = f"Thank you for the assessment. Based on your responses, I recommend seeing a {doctor_type}. Priority level: {urgency}. Now let's get you scheduled. I'll need your date of birth for insurance verification."
+                completion_message = (
+                    f"Thank you for the assessment. "
+                    f"Based on your responses, I recommend seeing a {doctor_type}. "
+                    f"Priority level: {urgency}. "
+                    f"Now let's get you scheduled. "
+                    f"I'll need your date of birth for insurance verification."
+                )
                 
                 await self._end_triage_mode()
                 await self.audio.speak(completion_message)
                 self.session.add_interaction("assistant", completion_message)
                 
             elif task_state == TaskState.input_required:
+                # Ask next question
                 if result['status'].get('message'):
-                    next_question = self._extract_text_from_message(result['status']['message'])
+                    next_question = self._extract_text_from_message(
+                        result['status']['message']
+                    )
                     if next_question:
                         await self.audio.speak(next_question)
                         self.session.add_interaction("assistant", next_question)
                 else:
                     print("TRIAGE: No message in input-required state - ending triage")
-                    await self._end_triage_mode("Let me help you continue with scheduling your appointment.")
-            
+                    await self._end_triage_mode(
+                        "Let me help you continue with scheduling your appointment."
+                    )
+                
             elif task_state in [TaskState.failed, TaskState.canceled]:
                 print(f"TRIAGE: Task ended with state: {task_state}")
-                await self._end_triage_mode("Let me help you continue with scheduling your appointment.")
-        
+                await self._end_triage_mode(
+                    "Let me help you continue with scheduling your appointment."
+                )
+                
         except Exception as e:
             print(f"TRIAGE: Error in conversation: {e}")
-            await self._end_triage_mode("Let me help you continue with scheduling your appointment.")
+            await self._end_triage_mode(
+                "Let me help you continue with scheduling your appointment."
+            )
     
-    async def _end_triage_mode(self, message=None):
+    async def _end_triage_mode(self, message: Optional[str] = None):
         """End triage mode and return to normal flow"""
-        print("TRIAGE: Ending triage mode")
+        print("TRIAGE: Ending triage mode - cleaning up A2A connection")
         
         self.session.in_triage_mode = False
         self.session.triage_complete = True
         self.session.triage_task_id = None
         self.session.triage_context_id = None
         
+        print("TRIAGE: Mode ended - returning to normal appointment flow")
+        
         if message:
             await self.audio.speak(message)
             self.session.add_interaction("assistant", message)
     
-    def _extract_text_from_message(self, message):
+    def _extract_text_from_message(self, message: dict) -> Optional[str]:
         """Extract text content from A2A message"""
         if not message or not message.get('parts'):
             return None
@@ -338,7 +363,7 @@ class HealthcareAgent:
         
         return None
     
-    def _extract_triage_results(self, artifact):
+    def _extract_triage_results(self, artifact: dict) -> dict:
         """Extract triage results from artifact"""
         if not artifact or not artifact.get('parts'):
             return {}
