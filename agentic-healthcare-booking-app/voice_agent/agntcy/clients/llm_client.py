@@ -1,15 +1,11 @@
-"""
-LLM Client for processing user inputs
-"""
+# LLM Client
 import asyncio
 import json
 import requests
+
 from ioa_observe.sdk.decorators import tool
 
-
 class LLMClient:
-    """Client for LLM-based conversation processing"""
-    
     def __init__(self, jwt_token, endpoint_url, project_id, connection_id):
         self.headers = {
             'Content-Type': 'application/json',
@@ -22,62 +18,10 @@ class LLMClient:
     
     @tool(name="llm_tool")
     async def process(self, user_input, session):
-        """Process user input and return structured response"""
         print(f"LLM: Processing: '{user_input[:50]}...'")
         
         if session.in_triage_mode:
-            prompt = self._build_triage_prompt(user_input, session)
-        else:
-            prompt = self._build_appointment_prompt(user_input, session)
-        
-        payload = {
-            "messages": [
-                {"role": "system", "content": prompt},
-                {"role": "user", "content": user_input}
-            ],
-            "project_id": self.project_id,
-            "connection_id": self.connection_id,
-            "max_tokens": 400,
-            "temperature": 0.2
-        }
-        
-        def _request():
-            return requests.post(self.endpoint_url, headers=self.headers, json=payload, timeout=30)
-        
-        loop = asyncio.get_event_loop()
-        response = await loop.run_in_executor(None, _request)
-        
-        if response.status_code == 200:
-            data = response.json()
-            if 'choices' in data and data['choices']:
-                content = data['choices'][0]['message']['content']
-                
-                try:
-                    # Clean JSON response
-                    if content.startswith('```json'):
-                        content = content[7:]
-                    if content.endswith('```'):
-                        content = content[:-3]
-                    
-                    result = json.loads(content.strip())
-                    print("LLM: Response parsed successfully")
-                    return result
-                except Exception as e:
-                    print(f"LLM: Failed to parse response: {e}")
-        
-        # Return default response on failure
-        return {
-            "response": "I understand. Please continue.",
-            "extract": {},
-            "need_triage": False,
-            "call_discovery": False,
-            "call_eligibility": False,
-            "done": False
-        }
-    
-    def _build_triage_prompt(self, user_input, session):
-        """Build prompt for triage mode"""
-        return f"""You are in TRIAGE MODE. The user is answering medical assessment questions.
+            prompt = f"""You are in TRIAGE MODE. The user is answering medical assessment questions.
 
 Current triage task: {session.triage_task_id}
 User response to triage question: "{user_input}"
@@ -92,10 +36,8 @@ Respond with:
     "done": false,
     "continue_triage": true
 }}"""
-    
-    def _build_appointment_prompt(self, user_input, session):
-        """Build prompt for appointment scheduling mode"""
-        return f"""You are a healthcare appointment scheduler with this specific flow:
+        else:
+            prompt = f"""You are a healthcare appointment scheduler with this specific flow:
 
 1. Ask name, phone
 2. Ask reason for visit
@@ -127,3 +69,46 @@ JSON response:
     "call_eligibility": true/false,
     "done": true/false
 }}"""
+        
+        payload = {
+            "messages": [
+                {"role": "system", "content": prompt},
+                {"role": "user", "content": user_input}
+            ],
+            "project_id": self.project_id,
+            "connection_id": self.connection_id,
+            "max_tokens": 400,
+            "temperature": 0.2
+        }
+        
+        def _request():
+            return requests.post(self.endpoint_url, headers=self.headers, json=payload, timeout=30)
+        
+        loop = asyncio.get_event_loop()
+        response = await loop.run_in_executor(None, _request)
+        
+        if response.status_code == 200:
+            data = response.json()
+            if 'choices' in data and data['choices']:
+                content = data['choices'][0]['message']['content']
+                
+                try:
+                    if content.startswith('```json'):
+                        content = content[7:]
+                    if content.endswith('```'):
+                        content = content[:-3]
+                    
+                    result = json.loads(content.strip())
+                    print("LLM: Response parsed")
+                    return result
+                except:
+                    pass
+        
+        return {
+            "response": "I understand. Please continue.",
+            "extract": {},
+            "need_triage": False,
+            "call_discovery": False,
+            "call_eligibility": False,
+            "done": False
+        }

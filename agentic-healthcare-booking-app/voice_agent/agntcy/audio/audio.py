@@ -1,80 +1,70 @@
-"""
-Audio System for Speech Recognition and Text-to-Speech
-"""
-import asyncio
+# Audio System
 import os
+import asyncio
 import tempfile
-from ioa_observe.sdk.decorators import tool
 
 try:
-    import speech_recognition as sr
-    import pygame
     from gtts import gTTS
+    import pygame
+    import speech_recognition as sr
     AUDIO_AVAILABLE = True
 except ImportError:
-    AUDIO_AVAILABLE = False
+    AUDIO_AVAILABLE = False # Speech recognition not available
+
+from ioa_observe.sdk.decorators import tool
 
 
 class AudioSystem:
-    """Handles speech recognition and text-to-speech"""
-    
     def __init__(self):
         self.enabled = AUDIO_AVAILABLE
         self.tts_enabled = False
         self.speech_enabled = False
         
         if self.enabled:
-            self._initialize_audio()
-    
-    def _initialize_audio(self):
-        """Initialize audio components"""
-        try:
-            print("Initializing audio...")
-            
-            # Initialize speech recognition
             try:
-                self.recognizer = sr.Recognizer()
-                self.microphone = sr.Microphone()
-                with self.microphone as source:
-                    self.recognizer.adjust_for_ambient_noise(source, duration=1)
+                print("Initializing audio...")
                 
-                self.recognizer.energy_threshold = 300
-                self.recognizer.dynamic_energy_threshold = True
-                self.recognizer.pause_threshold = 0.8
-                self.speech_enabled = True
-                print("✓ Speech recognition ready")
-            except Exception as e:
-                print(f"✗ Speech recognition failed: {e}")
-                self.speech_enabled = False
-            
-            # Initialize TTS
-            try:
-                pygame.mixer.pre_init(frequency=22050, size=-16, channels=2, buffer=1024)
-                pygame.mixer.init()
-                self.tts_enabled = True
-                print("✓ TTS system ready")
-            except Exception as e:
-                print(f"✗ TTS init failed: {e}")
-                self.tts_enabled = False
+                try:
+                    self.recognizer = sr.Recognizer()
+                    self.microphone = sr.Microphone()
+                    with self.microphone as source:
+                        self.recognizer.adjust_for_ambient_noise(source, duration=1)
+                    
+                    self.recognizer.energy_threshold = 300
+                    self.recognizer.dynamic_energy_threshold = True
+                    self.recognizer.pause_threshold = 0.8
+                    self.speech_enabled = True
+                    print("Speech recognition ready")
+                except Exception as e:
+                    print(f"Speech recognition failed: {e}")
+                    self.speech_enabled = False
                 
-        except Exception as e:
-            print(f"✗ Audio init failed: {e}")
-            self.enabled = False
+                try:
+                    pygame.mixer.pre_init(frequency=22050, size=-16, channels=2, buffer=1024)
+                    pygame.mixer.init()
+                    self.tts_enabled = True
+                    print("TTS system ready")
+                except Exception as e:
+                    print(f"TTS init failed: {e}")
+                    self.tts_enabled = False
+                    
+            except Exception as e:
+                print(f"Audio init failed: {e}")
+                self.enabled = False
     
     @tool(name="listening_tool")
     async def listen(self, timeout=5):
-        """Listen for user input via microphone or console"""
         if not self.speech_enabled:
             return input("You: ").strip()
         
-        print("🎤 Listening...")
+        print("Listening...")
         
         def _listen():
             try:
                 with self.microphone as source:
                     audio = self.recognizer.listen(source, timeout=timeout, phrase_time_limit=6)
                 result = self.recognizer.recognize_google(audio, language='en-US')
-                print(f"✓ Recognized: '{result}'")
+                print(f"Recognized: '{result}'")
                 return result.strip()
             except sr.UnknownValueError:
                 return "UNCLEAR"
@@ -88,10 +78,10 @@ class AudioSystem:
     
     @tool(name="speaking_tool")
     async def speak(self, text):
-        """Speak text using TTS or print to console"""
-        print(f"🤖 Agent: {text}")
+        print(f"Agent: {text}")
         
         if not self.tts_enabled:
+            print("TTS: Not enabled, skipping audio")
             return
         
         def _speak():
@@ -106,7 +96,6 @@ class AudioSystem:
                     pygame.mixer.music.load(temp_file)
                     pygame.mixer.music.play()
                     
-                    # Wait for playback to complete (max 30 seconds)
                     max_wait = 30
                     wait_count = 0
                     while pygame.mixer.music.get_busy() and wait_count < max_wait * 20:

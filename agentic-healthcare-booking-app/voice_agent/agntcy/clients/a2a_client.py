@@ -1,10 +1,10 @@
-"""
-A2A (Agent-to-Agent) Client for Hosted Service Communication
-"""
-import asyncio
+# A2A Client for Hosted Service
+import os
 import time
 import uuid
+import asyncio
 import requests
+
 from ioa_observe.sdk import Observe
 from ioa_observe.sdk.instrumentations.a2a import A2AInstrumentor
 from ioa_observe.sdk.decorators import tool
@@ -12,17 +12,14 @@ from ioa_observe.sdk.tracing import session_start
 
 
 class A2AClient:
-    """Client for communicating with A2A hosted services"""
-    
-    def __init__(self, base_url, message_url, api_key, otlp_endpoint):
-        self.base_url = base_url
-        self.message_url = message_url
-        self.api_key = api_key
+    def __init__(self):
+        self.base_url = os.getenv('A2A_SERVICE_URL', 'http://localhost:8887')
+        self.message_url = os.getenv('A2A_MESSAGE_URL', self.base_url)
+        self.api_key = os.getenv('A2A_API_KEY')
         self.agent_id = f"client_{uuid.uuid4().hex[:8]}"
         self.agent_card = None
-        
-        # Initialize observability
-        Observe.init("A2A_Client", api_endpoint=otlp_endpoint)
+        api_endpoint = os.getenv('OTLP_ENDPOINT', 'http://localhost:4318')
+        Observe.init("A2A_Client", api_endpoint=api_endpoint)
         A2AInstrumentor().instrument()
         
         print(f"A2A-CLIENT: Initialized as {self.agent_id}")
@@ -31,7 +28,6 @@ class A2AClient:
         print(f"A2A-CLIENT: API Key: {'Set' if self.api_key else 'Not set'}")
     
     def _timed_request(self, method, url, description, **kwargs):
-        """Execute a timed HTTP request with detailed logging"""
         start_time = time.time()
         timestamp = time.strftime("%H:%M:%S", time.localtime(start_time))
         print(f"A2A-CLIENT: [{timestamp}] >>> {method} {description}")
@@ -62,22 +58,17 @@ class A2AClient:
             return None, elapsed
     
     async def discover_agent(self):
-        """Discover the A2A agent's capabilities"""
         try:
             def _request():
-                return self._timed_request(
-                    'GET',
-                    f"{self.base_url}/.well-known/agent-card.json",
-                    "Agent Discovery",
-                    timeout=30
-                )
+                return self._timed_request('GET', f"{self.base_url}/.well-known/agent-card.json", 
+                                         "Agent Discovery", timeout=30)
             
             loop = asyncio.get_event_loop()
             response, elapsed = await loop.run_in_executor(None, _request)
             
             if response and response.status_code == 200:
                 self.agent_card = response.json()
-                print(f"A2A-CLIENT: Discovered agent: {self.agent_card.get('name', 'Unknown')}")
+                print(f"A2A-CLIENT: Discovered agent: {self.agent_card['name']}")
                 return True
             else:
                 if response:
@@ -89,7 +80,6 @@ class A2AClient:
     
     @tool(name="a2a_message_tool")
     async def send_message(self, message_parts, task_id=None, context_id=None):
-        """Send a message to the A2A service"""
         message = {
             "role": "user",
             "parts": message_parts,
@@ -101,10 +91,7 @@ class A2AClient:
             message["taskId"] = task_id
         if context_id:
             message["contextId"] = context_id
-        
-        # Start observability session
         session_start()
-        
         payload = {
             "jsonrpc": "2.0",
             "id": str(uuid.uuid4()),
@@ -129,8 +116,6 @@ class A2AClient:
         try:
             def _request():
                 headers = {"Content-Type": "application/json"}
-                
-                # Add API key if available
                 if self.api_key:
                     headers['X-Shared-Key'] = self.api_key
                 
@@ -138,14 +123,8 @@ class A2AClient:
                 if task_id:
                     description += f" (Task: {task_id})"
                 
-                return self._timed_request(
-                    'POST',
-                    self.message_url,
-                    description,
-                    json=payload,
-                    headers=headers,
-                    timeout=60
-                )
+                return self._timed_request('POST', self.message_url, description,
+                                         json=payload, headers=headers, timeout=60)
             
             loop = asyncio.get_event_loop()
             response, elapsed = await loop.run_in_executor(None, _request)

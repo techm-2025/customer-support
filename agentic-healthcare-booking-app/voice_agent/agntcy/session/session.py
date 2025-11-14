@@ -1,18 +1,12 @@
-"""
-Session Management
-"""
-import json
+# Session Management
 import os
+import json
 import uuid
 from datetime import datetime
 
-
 class Session:
-    """Manages session state and conversation history"""
-    
-    def __init__(self, session_dir='sessions'):
+    def __init__(self):
         self.id = str(uuid.uuid4())[:8]
-        self.session_dir = session_dir
         self.data = {}
         self.triage_complete = False
         self.triage_attempts = 0
@@ -22,11 +16,8 @@ class Session:
         self.triage_context_id = None
         self.triage_results = {}
         self.in_triage_mode = False
-        
-        print(f"SESSION: Created session {self.id}")
     
     def add_interaction(self, role, message, extra_data=None):
-        """Log a conversation interaction"""
         interaction = {
             "timestamp": datetime.now().isoformat(),
             "role": role,
@@ -35,15 +26,13 @@ class Session:
         }
         if extra_data:
             interaction["extra_data"] = extra_data
-        
         self.conversation_log.append(interaction)
         print(f"SESSION-LOG: {role.upper()} - {message[:100]}...")
     
     def save_to_file(self):
-        """Save session data to file"""
         try:
-            os.makedirs(self.session_dir, exist_ok=True)
-            filename = f"{self.session_dir}/session_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{self.id}.json"
+            os.makedirs("sessions", exist_ok=True)
+            filename = f"sessions/session_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{self.id}.json"
             
             session_data = {
                 "session_id": self.id,
@@ -53,7 +42,6 @@ class Session:
                 "final_data": self.data,
                 "triage_complete": self.triage_complete,
                 "triage_attempts": self.triage_attempts,
-                "triage_results": self.triage_results,
                 "conversation_log": self.conversation_log,
                 "data_fields_collected": list(self.data.keys()),
                 "total_interactions": len(self.conversation_log)
