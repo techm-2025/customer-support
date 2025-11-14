@@ -1,0 +1,30 @@
+# Core dependencies
+requests>=2.31.0
+python-dotenv>=1.0.0
+
+# Audio dependencies (optional but recommended)
+SpeechRecognition>=3.10.0
+PyAudio>=0.2.13
+pygame>=2.5.0
+gTTS>=2.4.0
+
+# Development dependencies
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+black>=23.0.0
+flake8>=6.0.0
+mypy>=1.5.0
+
+# a2a protocol
+a2a-sdk
+
+# agntcy
+ioa_observe_sdk
+agntcy-identity-service-sdk==0.0.7
+
+# a2a service
+Flask
+Flask-cors
+pydantic
+pytest-cov
+pytest-mock

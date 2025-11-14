@@ -1,9 +1,9 @@
-import asyncio
+# Insurance Client
 import re
 import requests
-from http import HTTPStatus
-from ioa_observe.sdk.decorators import tool
+import asyncio
 from datetime import datetime
+from ioa_observe.sdk.decorators import tool
 
 class InsuranceClient:
     def __init__(self, mcp_url, api_key):
@@ -62,7 +62,7 @@ class InsuranceClient:
         loop = asyncio.get_event_loop()
         response = await loop.run_in_executor(None, _request)
         
-        if response.status_code == HTTPStatus.OK:
+        if response.status_code == 200:
             data = response.json()
             
             if "result" in data:
@@ -121,7 +121,7 @@ class InsuranceClient:
         loop = asyncio.get_event_loop()
         response = await loop.run_in_executor(None, _request)
         
-        if response.status_code == HTTPStatus.OK:
+        if response.status_code == 200:
             data = response.json()
             
             if "result" in data:

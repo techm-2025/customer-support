@@ -1,8 +1,11 @@
+"""
+Audio system for speech recognition and text-to-speech
+"""
 import asyncio
 import os
 import tempfile
-from ioa_observe.sdk.decorators import tool
 
+# Audio imports with fallback
 try:
     import speech_recognition as sr
     import pygame
@@ -10,48 +13,64 @@ try:
     AUDIO_AVAILABLE = True
 except ImportError:
     AUDIO_AVAILABLE = False
-    print("Audio libraries not found. Audio functionalities will be disabled.")
+
 
 class AudioSystem:
+    """Handles speech recognition and text-to-speech functionality"""
+    
     def __init__(self):
         self.enabled = AUDIO_AVAILABLE
         self.tts_enabled = False
         self.speech_enabled = False
         
         if self.enabled:
-            try:
-                print("Initializing audio...")
-                
-                try:
-                    self.recognizer = sr.Recognizer()
-                    self.microphone = sr.Microphone()
-                    with self.microphone as source:
-                        self.recognizer.adjust_for_ambient_noise(source, duration=1)
-                    
-                    self.recognizer.energy_threshold = 300
-                    self.recognizer.dynamic_energy_threshold = True
-                    self.recognizer.pause_threshold = 0.8
-                    self.speech_enabled = True
-                    print("Speech recognition ready")
-                except Exception as e:
-                    print(f"Speech recognition failed: {e}")
-                    self.speech_enabled = False
-                
-                try:
-                    pygame.mixer.pre_init(frequency=22050, size=-16, channels=2, buffer=1024)
-                    pygame.mixer.init()
-                    self.tts_enabled = True
-                    print("TTS system ready")
-                except Exception as e:
-                    print(f"TTS init failed: {e}")
-                    self.tts_enabled = False
-                    
-            except Exception as e:
-                print(f"Audio init failed: {e}")
-                self.enabled = False
+            self._initialize_audio()
     
-    @tool(name="listening_tool")
-    async def listen(self, timeout=5):
+    def _initialize_audio(self):
+        """Initialize audio components"""
+        try:
+            print("Initializing audio...")
+            
+            # Initialize speech recognition
+            try:
+                self.recognizer = sr.Recognizer()
+                self.microphone = sr.Microphone()
+                with self.microphone as source:
+                    self.recognizer.adjust_for_ambient_noise(source, duration=1)
+                
+                self.recognizer.energy_threshold = 300
+                self.recognizer.dynamic_energy_threshold = True
+                self.recognizer.pause_threshold = 0.8
+                self.speech_enabled = True
+                print("Speech recognition ready")
+            except Exception as e:
+                print(f"Speech recognition failed: {e}")
+                self.speech_enabled = False
+            
+            # Initialize text-to-speech
+            try:
+                pygame.mixer.pre_init(frequency=22050, size=-16, channels=2, buffer=1024)
+                pygame.mixer.init()
+                self.tts_enabled = True
+                print("TTS system ready")
+            except Exception as e:
+                print(f"TTS init failed: {e}")
+                self.tts_enabled = False
+                
+        except Exception as e:
+            print(f"Audio init failed: {e}")
+            self.enabled = False
+    
+    async def listen(self, timeout: int = 5) -> str:
+        """
+        Listen for user speech input
+        
+        Args:
+            timeout: Maximum seconds to wait for input
+            
+        Returns:
+            Recognized text or status string (UNCLEAR, TIMEOUT, ERROR)
+        """
         if not self.speech_enabled:
             return input("You: ").strip()
         
@@ -74,8 +93,13 @@ class AudioSystem:
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(None, _listen)
     
-    @tool(name="speaking_tool")
-    async def speak(self, text):
+    async def speak(self, text: str):
+        """
+        Speak text using text-to-speech
+        
+        Args:
+            text: Text to speak
+        """
         print(f"Agent: {text}")
         
         if not self.tts_enabled:

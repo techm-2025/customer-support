@@ -1,9 +1,9 @@
+# LLM Client
 import asyncio
-import json,os
+import json
 import requests
-from http import HTTPStatus
+
 from ioa_observe.sdk.decorators import tool
-from models.session import Session
 
 class LLMClient:
     def __init__(self, jwt_token, endpoint_url, project_id, connection_id):
@@ -87,7 +87,7 @@ JSON response:
         loop = asyncio.get_event_loop()
         response = await loop.run_in_executor(None, _request)
         
-        if response.status_code == HTTPStatus.OK:
+        if response.status_code == 200:
             data = response.json()
             if 'choices' in data and data['choices']:
                 content = data['choices'][0]['message']['content']

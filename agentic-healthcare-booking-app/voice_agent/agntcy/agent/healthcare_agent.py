@@ -1,21 +1,17 @@
-import asyncio
+# Healthcare Agent
 import os
 import time
 import random
 import string
-import sys
-from pathlib import Path
 from ioa_observe.sdk.decorators import agent, workflow
-from ioa_observe.sdk.metrics.agents.availability import agent_availability
-from models.session import Session
-from services.llm_client import LLMClient
-from services.audio_service import AudioSystem
-from services.a2a_client import A2AClient
-from services.insurance_client import InsuranceClient
-from dotenv import load_dotenv
 
+from session.session import Session
+from audio.audio import AudioSystem
+from clients.llm_client import LLMClient
+from clients.insurance_client import InsuranceClient
+from clients.a2a_client import A2AClient 
 from a2a.types import TaskState
-load_dotenv()
+
 
 @agent(name="healthcare_agent", description="healthcare voice agent", version="1.0.0", protocol="A2A")
 class HealthcareAgent:
@@ -259,7 +255,7 @@ class HealthcareAgent:
             task_state = result['status']['state']
             print(f"TRIAGE: A2A task state: {task_state}")
             
-            if task_state == TaskState.COMPLETED:
+            if task_state == TaskState.completed:
                 print("TRIAGE: Assessment COMPLETED - exiting A2A mode")
                 
                 if task_data.get('artifacts'):
@@ -287,7 +283,7 @@ class HealthcareAgent:
                     "doctor_type":doctor_type
                 }
                 
-            elif task_state == TaskState.INPUT_REQUIRED:
+            elif task_state == TaskState.input_required:
                 if result['status'].get('message'):
                     next_question = self._extract_text_from_message(result['status']['message'])
                     if next_question:
@@ -309,7 +305,7 @@ class HealthcareAgent:
                         "reason":"no_triage_message"
                     }
 
-            elif task_state in [TaskState.FAILED, TaskState.CANCELED]:
+            elif task_state in [TaskState.failed, TaskState.canceled]:
                 print(f"TRIAGE: Task ended with state: {task_state}")
                 await self._end_triage_mode("Let me help you continue with scheduling your appointment.")
                 return {
