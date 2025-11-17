@@ -43,7 +43,7 @@ Voice interaction agent for patient communication via phone or voice interface.
 
 - **`agntcy/`** - Voice agent implementation with identity and observe
   - **`agent/`** 
-    - `healthcare_agent.py` - voice-agent orchestrartor
+    - `healthcare_agent.py` - voice-agent orchestrator
   - **`models/`** 
     - `session.py` - session management and persistence
   - **`services/`**
@@ -51,8 +51,18 @@ Voice interaction agent for patient communication via phone or voice interface.
     - `audio_service.py` - Audio input and output service
     - `insurance_client.py` - Insurance MCP client
     - `llm_client.py` - LLM processing client
-  - `main.py` - voice-agent entry point and intialization
+  - `main.py` - voice-agent entry point and initialization
   - `README.md` - Detailed voice agent implementation along with identity and observe
+
+### `/common/agntcy/observe`
+Observability and metrics collection infrastructure.
+
+- **`deploy/`** - Docker Compose configurations and deployment scripts
+  - `docker-compose.yml` - Production stack configuration
+  - `docker-compose-build.yml` - Build from source configuration
+  - Custom metrics plugin and MCE integration
+- **`custom_metrics_plugin/`** - Custom metrics implementation
+  - TokenUsage, AgentErrorCount, ToolCallCount, NumberActiveAgents
   
 - **`unit-tests/`** - Testing suite
   - `a2a_client.py` - Agent-to-agent communication test client
@@ -62,14 +72,86 @@ Voice interaction agent for patient communication via phone or voice interface.
   - `va_a2a_mcp.py` - Agent-to-agent,  Model Context Protocol clients with voice-agent communication
   - `va_http_mcp.py` - HTTP-based Medical triage, Model Context Protocol based Insurance clients with voice-agent communication
 
+## Prerequisites
+
+### Environment Variables
+
+Set the following environment variables before running the application:
+
+```bash
+# Base paths
+export APP_HOME=${APP_HOME:-/Users/xiaodonz/Documents/GitHub/cs1}
+export TELEMETRY_HUB_HOME=${TELEMETRY_HUB_HOME:-/Users/xiaodonz/Documents/GitHub/telemetry-hub}
+
+# Observability
+export OTLP_HTTP_ENDPOINT="http://localhost:4318"
+
+# LLM Configuration
+export JWT_TOKEN="your-jwt-token"
+export ENDPOINT_URL="your-endpoint-url"
+export PROJECT_ID="your-project-id"
+export CONNECTION_ID="your-connection-id"
+
+# MCP Configuration
+export MCP_URL="https://mcp.unstable.infinitusai.dev/mcp"
+export X_INF_API_KEY="your-api-key"
+
+# A2A Configuration
+export A2A_SERVICE_URL="http://localhost:8887"
+export A2A_MESSAGE_URL="http://localhost:8887"
+export A2A_API_KEY="your-a2a-key"
+```
+
 ## Getting Started
 
-Each component has its own README with detailed setup instructions:
+### 1. Observability Stack
 
-1. **Insurance Agent** - See `/insurance-agent/README.md`
-2. **Triage Agent** - See `/triage_agent/README.md` and `/triage_agent/medical-triage/README.md`
-3. **Voice Agent** - See `/voice-agent/README.md`
-4. **Observe Stack** - See `/triage_agent/infermedica/agntcy/observe_config/README.md`
+Start the observability services (ClickHouse, OTEL Collector, MCE, Grafana):
+
+```bash
+cd common/agntcy/observe/deploy
+docker-compose up -d
+```
+
+Or use the build version if building from source:
+
+```bash
+docker-compose -f docker-compose-build.yml up -d
+```
+
+Access Grafana at http://localhost:3000 (admin/admin)
+
+### 2. Voice Agent
+
+```bash
+cd voice_agent
+source venv/bin/activate
+python3 -m agntcy.main
+```
+
+See `/voice_agent/README.md` for detailed setup.
+
+### 3. Triage Agent
+
+See `/triage_agent/README.md` and `/triage_agent/medical-triage/README.md`
+
+### 4. Insurance Agent
+
+See `/insurance-agent/README.md`
+
+## Observability
+
+The observability stack includes:
+
+- **OpenTelemetry Collector** - Telemetry ingestion
+- **ClickHouse** - Time-series database for traces and metrics
+- **Metrics Computation Engine (MCE)** - Computes 17+ metrics including:
+  - Custom metrics: TokenUsage, AgentErrorCount, ToolCallCount, NumberActiveAgents
+  - Judge metrics: GoalSuccessRate, Groundedness, Consistency, ContextPreservation, etc.
+  - Confidence metrics: LLMAverageConfidence, LLMMaximumConfidence, LLMMinimumConfidence
+- **Grafana** - Dashboards for visualization
+
+Metrics are automatically collected by the observe SDK. See `/common/agntcy/observe/deploy/` for setup and configuration.
 
 ## Key Technologies
 

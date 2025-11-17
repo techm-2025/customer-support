@@ -9,6 +9,7 @@
             <profile>default</profile>
             <quota>default</quota>
             <access_management>1</access_management>
+            <allow_access_management>1</allow_access_management>
         </default>
         
         <admin>

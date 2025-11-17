@@ -2,21 +2,56 @@ import asyncio
 import os
 import sys
 from pathlib import Path
-from agent.healthcare_agent import HealthcareAgent
-from services.audio_service import AUDIO_AVAILABLE
 from dotenv import load_dotenv
 
-app_dir = Path(__file__).resolve().parent.parent.parent
-common_dir = app_dir/ 'common'
-sys.path.insert(0, str(common_dir))
-from agntcy.observe.observe_config import initialize_observability
+try:
+    script_dir = Path(__file__).resolve().parent
+    voice_agent_dir = script_dir.parent
+    app_dir = script_dir.parent.parent
+except (NameError, AttributeError):
+    app_home = os.getenv('APP_HOME', '/Users/xiaodonz/Documents/GitHub/cs1')
+    app_dir = Path(app_home) / 'agentic-healthcare-booking-app'
+    voice_agent_dir = app_dir / 'voice_agent'
+
+common_dir = app_dir / 'common'
+observe_dir = app_dir.parent / 'observe'
+
+if common_dir.exists():
+    sys.path.insert(0, str(common_dir.resolve()))
+if voice_agent_dir.exists():
+    sys.path.insert(0, str(voice_agent_dir.resolve()))
+if observe_dir.exists():
+    sys.path.insert(0, str(observe_dir.resolve()))
+
+if 'agntcy' in sys.modules:
+    agntcy_module = sys.modules['agntcy']
+    if hasattr(agntcy_module, '__file__') and agntcy_module.__file__:
+        if 'voice_agent' in str(agntcy_module.__file__):
+            del sys.modules['agntcy']
+            modules_to_remove = [k for k in sys.modules.keys() if k.startswith('agntcy.')]
+            for k in modules_to_remove:
+                del sys.modules[k]
+
+voice_agent_path = str(voice_agent_dir.resolve())
+if voice_agent_path not in sys.path:
+    sys.path.insert(0, voice_agent_path)
+
+import importlib.util
+observe_config_path = common_dir / 'agntcy' / 'observe' / 'observe_config.py'
+if observe_config_path.exists():
+    spec = importlib.util.spec_from_file_location("observe_config", observe_config_path)
+    observe_config_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(observe_config_module)
+    initialize_observability = observe_config_module.initialize_observability
+else:
+    raise ImportError(f"observe_config.py not found at {observe_config_path}")
+
+from agntcy.agent.healthcare_agent import HealthcareAgent
+from agntcy.services.audio_service import AUDIO_AVAILABLE
 
 load_dotenv()
 
 def get_missing_env_vars(required_vars):
-    """
-    Generator function to yield missing environment variables from a given list.
-    """
     return (var for var in required_vars if not os.getenv(var))
 
 def run_agent():
