@@ -3,8 +3,8 @@
     <logger>
         <level>information</level>
         <console>true</console>
-        <log></log>
-        <errorlog></errorlog>
+        <log>/var/lib/clickhouse/log/clickhouse-server.log</log>
+        <errorlog>/var/lib/clickhouse/log/clickhouse-server.err.log</errorlog>
     </logger>
     
     <http_port>8123</http_port>
@@ -49,5 +49,5 @@
         <flush_interval_milliseconds>7500</flush_interval_milliseconds>
     </trace_log>
 
-    <format_schema_path></format_schema_path>
+    <format_schema_path>/var/lib/clickhouse/format_schemas/</format_schema_path>
 </clickhouse>

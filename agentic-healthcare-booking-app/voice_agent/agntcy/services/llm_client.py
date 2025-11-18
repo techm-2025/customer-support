@@ -3,7 +3,7 @@ import json,os
 import requests
 from http import HTTPStatus
 from ioa_observe.sdk.decorators import tool
-from models.session import Session
+from agntcy.models.session import Session
 
 class LLMClient:
     def __init__(self, jwt_token, endpoint_url, project_id, connection_id):

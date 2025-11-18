@@ -7,14 +7,24 @@ import sys
 from pathlib import Path
 from ioa_observe.sdk.decorators import agent, workflow
 from ioa_observe.sdk.metrics.agents.availability import agent_availability
-from models.session import Session
-from services.llm_client import LLMClient
-from services.audio_service import AudioSystem
-from services.a2a_client import A2AClient
-from services.insurance_client import InsuranceClient
+from agntcy.models.session import Session
+from agntcy.services.llm_client import LLMClient
+from agntcy.services.audio_service import AudioSystem
+from agntcy.services.a2a_client import A2AClient
+from agntcy.services.insurance_client import InsuranceClient
 from dotenv import load_dotenv
 
-from a2a.types import TaskState
+# Try to import TaskState from a2a, fallback if not available
+try:
+    from a2a.types import TaskState
+except ImportError:
+    # Define TaskState enum if not available
+    from enum import Enum
+    class TaskState(Enum):
+        COMPLETED = "completed"
+        INPUT_REQUIRED = "input_required"
+        FAILED = "failed"
+        CANCELED = "canceled"
 load_dotenv()
 
 @agent(name="healthcare_agent", description="healthcare voice agent", version="1.0.0", protocol="A2A")

@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # ClickHouse Database
   clickhouse:
@@ -26,6 +24,12 @@ services:
     restart: unless-stopped
     networks:
       - observability
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8123/ping || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
     deploy:
       resources:
         limits:
@@ -71,6 +75,91 @@ services:
         reservations:
           memory: 512m
 
+  # API Layer (required by MCE)
+  api-layer:
+    image: ${API_LAYER_IMAGE:-ghcr.io/agntcy/telemetry-hub/api-layer:latest}
+    container_name: api-layer
+    hostname: api-layer
+    ports:
+      - "8080:8080"
+    environment:
+      - CLICKHOUSE_URL=clickhouse
+      - CLICKHOUSE_PORT=9000
+      - CLICKHOUSE_USER=${CLICKHOUSE_USER}
+      - CLICKHOUSE_PASS=${CLICKHOUSE_PASSWORD}
+      - CLICKHOUSE_DB=${CLICKHOUSE_DB}
+      - SERVER_PORT=8080
+      - PORT=8080
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+      otel-collector:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - observability
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/keepAlive || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: ${API_LAYER_MEMORY:-512m}
+        reservations:
+          memory: 256m
+
+  # Metrics Computation Engine (MCE)
+  metrics-computation-engine:
+    image: ${MCE_IMAGE:-ghcr.io/agntcy/telemetry-hub/metrics-computation-engine:latest}
+    container_name: mce
+    hostname: mce
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - RELOAD=false
+      - LOG_LEVEL=${MCE_LOG_LEVEL:-info}
+      - API_BASE_URL=http://api-layer:8080
+      - PAGINATION_LIMIT=50
+      - PAGINATION_DEFAULT_MAX_SESSIONS=50
+      - SESSIONS_TRACES_MAX=20
+      - LLM_BASE_MODEL_URL=${LLM_BASE_MODEL_URL:-https://api.openai.com/v1}
+      - LLM_MODEL_NAME=${LLM_MODEL_NAME:-gpt-4o}
+      - LLM_API_KEY=${LLM_API_KEY:-}
+      - METRICS_CACHE_ENABLED=${METRICS_CACHE_ENABLED:-false}
+      - PYTHONPATH=/app:/app/custom_metrics_plugin/src:/app/mce_metrics_plugin/src
+    volumes:
+      - ../custom_metrics_plugin:/app/custom_metrics_plugin:ro
+      - ${MCE_METRICS_PLUGIN_PATH:-${TELEMETRY_HUB_HOME:-/Users/xiaodonz/Documents/GitHub/telemetry-hub}/metrics_computation_engine/plugins/mce_metrics_plugin}:/app/mce_metrics_plugin:ro
+    command: >
+      sh -c "
+        pip install -e /app/custom_metrics_plugin &&
+        pip install -e /app/mce_metrics_plugin &&
+        python -m uvicorn metrics_computation_engine.main:app --host 0.0.0.0 --port 8000
+      "
+    depends_on:
+      api-layer:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - observability
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/status').read()\" || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: ${MCE_MEMORY:-2g}
+        reservations:
+          memory: 1g
+
   # Grafana
   grafana:
     image: grafana/grafana:10.1.0
@@ -92,6 +181,7 @@ services:
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
     depends_on:
       - clickhouse
+      - metrics-computation-engine
     restart: unless-stopped
     networks:
       - observability
@@ -124,6 +214,8 @@ services:
     depends_on:
       - grafana
       - otel-collector
+      - metrics-computation-engine
+      - api-layer
     restart: unless-stopped
     networks:
       - observability

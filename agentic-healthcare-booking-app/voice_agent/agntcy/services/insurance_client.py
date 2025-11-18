@@ -1,15 +1,28 @@
 import asyncio
 import re
+import os
 import requests
 from http import HTTPStatus
 from ioa_observe.sdk.decorators import tool
+from ioa_observe.sdk.instrumentations.mcp import McpInstrumentor
+from ioa_observe.sdk import Observe
 from datetime import datetime
 
 class InsuranceClient:
     def __init__(self, mcp_url, api_key):
         self.mcp_url = mcp_url
         self.headers = {"Content-Type": "application/json", "X-INF-API-KEY": api_key}
-        print("INSURANCE: Client initialized")
+        
+        # Initialize Observe SDK for MCP instrumentation
+        api_endpoint = os.getenv('OTLP_ENDPOINT', 'http://localhost:4318')
+        Observe.init("insurance_mcp_client", api_endpoint=api_endpoint)
+        
+        # Instrument MCP protocol interactions
+        # Note: This instruments MCP client calls made via requests
+        # For full MCP server instrumentation, see observe SDK examples
+        McpInstrumentor().instrument()
+        
+        print("INSURANCE: Client initialized with MCP instrumentation")
     
     def _split_name(self, name):
         parts = name.strip().split()
