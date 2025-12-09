@@ -1,17 +1,34 @@
-# Healthcare Agent
+# Copyright AGNTCY Contributors (https://github.com/agntcy)
+# SPDX-License-Identifier: Apache-2.0
+
+import asyncio
 import os
 import time
 import random
 import string
+import sys
+from pathlib import Path
 from ioa_observe.sdk.decorators import agent, workflow
+from ioa_observe.sdk.metrics.agents.availability import agent_availability
+from agntcy.models.session import Session
+from agntcy.services.llm_client import LLMClient
+from agntcy.services.audio_service import AudioSystem
+from agntcy.services.a2a_client import A2AClient
+from agntcy.services.insurance_client import InsuranceClient
+from dotenv import load_dotenv
 
-from session.session import Session
-from audio.audio import AudioSystem
-from clients.llm_client import LLMClient
-from clients.insurance_client import InsuranceClient
-from clients.a2a_client import A2AClient 
-from a2a.types import TaskState
-
+# Try to import TaskState from a2a, fallback if not available
+try:
+    from a2a.types import TaskState
+except ImportError:
+    # Define TaskState enum if not available
+    from enum import Enum
+    class TaskState(Enum):
+        COMPLETED = "completed"
+        INPUT_REQUIRED = "input_required"
+        FAILED = "failed"
+        CANCELED = "canceled"
+load_dotenv()
 
 @agent(name="healthcare_agent", description="healthcare voice agent", version="1.0.0", protocol="A2A")
 class HealthcareAgent:
@@ -255,7 +272,7 @@ class HealthcareAgent:
             task_state = result['status']['state']
             print(f"TRIAGE: A2A task state: {task_state}")
             
-            if task_state == TaskState.completed:
+            if task_state == TaskState.COMPLETED:
                 print("TRIAGE: Assessment COMPLETED - exiting A2A mode")
                 
                 if task_data.get('artifacts'):
@@ -283,7 +300,7 @@ class HealthcareAgent:
                     "doctor_type":doctor_type
                 }
                 
-            elif task_state == TaskState.input_required:
+            elif task_state == TaskState.INPUT_REQUIRED:
                 if result['status'].get('message'):
                     next_question = self._extract_text_from_message(result['status']['message'])
                     if next_question:
@@ -305,7 +322,7 @@ class HealthcareAgent:
                         "reason":"no_triage_message"
                     }
 
-            elif task_state in [TaskState.failed, TaskState.canceled]:
+            elif task_state in [TaskState.FAILED, TaskState.CANCELED]:
                 print(f"TRIAGE: Task ended with state: {task_state}")
                 await self._end_triage_mode("Let me help you continue with scheduling your appointment.")
                 return {
