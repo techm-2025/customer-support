@@ -1,3 +1,6 @@
+# Copyright AGNTCY Contributors (https://github.com/agntcy)
+# SPDX-License-Identifier: Apache-2.0
+
 """
 Triage API Connection Test Script
 Tests the full triage API flow: token -> survey -> messages -> summary
