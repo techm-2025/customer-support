@@ -1,3 +1,7 @@
+# Copyright AGNTCY Contributors (https://github.com/agntcy)
+#
+# SPDX-License-Identifier: Apache-2.0
+
 """
 Audio system for speech recognition and text-to-speech
 """

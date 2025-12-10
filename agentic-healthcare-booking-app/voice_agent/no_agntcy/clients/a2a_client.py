@@ -1,3 +1,7 @@
+# Copyright AGNTCY Contributors (https://github.com/agntcy)
+#
+# SPDX-License-Identifier: Apache-2.0
+
 """
 A2A client for hosted A2A service communication
 """

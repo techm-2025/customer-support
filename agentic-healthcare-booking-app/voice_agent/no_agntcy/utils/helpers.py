@@ -1,3 +1,7 @@
+# Copyright AGNTCY Contributors (https://github.com/agntcy)
+#
+# SPDX-License-Identifier: Apache-2.0
+
 """
 Utility functions for data formatting and parsing
 """
