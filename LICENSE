@@ -195,36 +195,3 @@ Apache License
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-
-===============================================================================
-
-ADDITIONAL NOTICES FOR A2A MEDICAL TRIAGE AGENT:
-
-This software includes components and concepts from:
-
-1. Agent2Agent (A2A) Protocol
-   - Protocol Specification: https://a2a-protocol.org/
-   - Copyright: A2A Project Contributors
-   - License: Apache License 2.0
-
-2. Medical Triage Concepts
-   - Based on established medical triage protocols
-   - Not intended for actual medical diagnosis
-   - For demonstration and educational purposes only
-
-3. OpenAI API Integration
-   - Uses OpenAI/Azure OpenAI APIs
-   - Subject to OpenAI Terms of Service
-   - API usage requires separate license/subscription
-
-MEDICAL DISCLAIMER:
-This software is for demonstration purposes only and is not intended for 
-actual medical diagnosis, treatment, or emergency response. Always consult 
-qualified healthcare professionals for medical advice. The developers and 
-contributors disclaim any liability for medical decisions based on this software.
-
-TRADEMARK NOTICES:
-- "A2A" and "Agent2Agent" may be trademarks of their respective owners
-- "OpenAI" and "GPT" are trademarks of OpenAI, Inc.
-- "Azure" is a trademark of Microsoft Corporation
-- Other product names mentioned may be trademarks of their respective companies
